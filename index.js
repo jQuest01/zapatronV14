@@ -1,3 +1,4 @@
+require('dotenv').config()
 const { Client, GatewayIntentBits, Collection, Interaction, EmbedBuilder } = require("discord.js")
 const { Player } = require('discord-player');
 
@@ -45,4 +46,4 @@ global.playerTrivia = []
 require('./src/events/player')
 require('./src/events/loader')
 
-client.login('ODgwNDUwMDA0MTIzMjU4OTkw.GdxPrP.uGWXwqli0ACE0Fn3brgpdfIeLzavjMSgIzWvMU')
+client.login(process.env.DISCORD_BOT_TOKEN)
