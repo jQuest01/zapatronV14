@@ -1701,4 +1701,55 @@
             "Green Day"
         ]
     }
+    {
+        "title": "Sign",
+        "url": "https://www.youtube.com/watch?v=RQPhz7SRzHQ",
+        "singers": [
+            "Flow"
+        ]
+    }
+    {
+        "title": "The Beginning",
+        "url": "https://www.youtube.com/watch?v=wdYGklflX_Y",
+        "singers": [
+            "One Ok Rock"
+        ]
+    }
+    {
+        "title": "Clock Strikes",
+        "url": "https://www.youtube.com/watch?v=Fcb2syW0wCs",
+        "singers": [
+            "One Ok Rock"
+        ]
+    }
+   {
+        "title": "THE WORLD",
+        "url": "https://www.youtube.com/watch?v=1qXNMyUqVqE",
+        "singers": [
+            "Nightmare"
+        ]
+    }
+   {
+        "title": "Lost in Paradise",
+        "url": "https://www.youtube.com/watch?v=C2YCpb6vT20",
+        "singers": [
+            "Ali",
+            "Aklo"
+        ]
+    }
+   {
+        "title": "A Queda",
+        "url": "https://www.youtube.com/watch?v=UfCst-ZtbUg",
+        "singers": [
+            "Glória Groove"
+        ]
+    }
+   {
+        "title": "i'm so tired",
+        "url": "https://www.youtube.com/watch?v=tDY2aBp3PO4",
+        "singers": [
+            "Lauv",
+            "Troye Sivan"
+        ]
+    }
 ]
