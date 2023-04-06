@@ -1672,4 +1672,33 @@
             "Blink 182"
         ]
     }
+
+    {
+        "title": "Boulevard of Broken Dreams",
+        "url": "https://www.youtube.com/watch?v=51XzW98wEDg",
+        "singers": [
+            "Green Day"
+        ]
+    }
+    {
+        "title": "American Idiot",
+        "url": "https://www.youtube.com/watch?v=a1BS7XnEZqc",
+        "singers": [
+            "Green Day"
+        ]
+    }
+    {
+        "title": "Wake Me Up When September Ends",
+        "url": "https://www.youtube.com/watch?v=VOJqRknAKVE",
+        "singers": [
+            "Green Day"
+        ]
+    }
+    {
+        "title": "Wake Me Up When September Ends",
+        "url": "https://www.youtube.com/watch?v=VOJqRknAKVE",
+        "singers": [
+            "Green Day"
+        ]
+    }
 ]
