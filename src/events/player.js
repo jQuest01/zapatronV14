@@ -32,7 +32,7 @@ player.events.on('playerStart', async (queue, track) => {
         }).catch(err => console.log(new Date(), err))
     } else {
         if (queue.currentTrack.url !== 'https://www.youtube.com/watch?v=poRbwlbtSh0') {
-            await queue.node.seek(30000)
+            // await queue.node.seek(30000)
 
             triviaControl(queue)
         }
@@ -58,7 +58,7 @@ function triviaControl(queue) {
 
             const songFiltrado = songsJson.filter((e) => { return e.url === song })[0]
 
-            nameAnswer = songFiltrado.title.toLowerCase()
+            nameAnswer = normalizeValue(songFiltrado.title.toLowerCase())
             singersAnswer = songFiltrado.singers
 
             let guess = normalizeValue(msg.content);
@@ -92,7 +92,7 @@ function triviaControl(queue) {
                 msg.react('☑');
             }
             // se chutou a música
-            else if (guess.match(nameAnswer)) {
+            else if (guess.match(nameAnswer) || nameAnswer.match(guess)) {
                 if (songNameFound) return; // already been guessed
                 songNameFound = true;
 
@@ -116,7 +116,7 @@ function triviaControl(queue) {
                     .setColor('#ff7373')
                     .setTitle(`Fim`)
                     .setDescription('Quiz finalizado a pedidos');
-                    
+
                 queue.metadata.send({ embeds: [embed] });
                 queue.delete()
                 return collector.stop()
@@ -154,8 +154,10 @@ function triviaControl(queue) {
 
             const embed = new EmbedBuilder()
                 .setColor('#ff7373')
-                .setTitle(`:musical_note: A música era: ${song}`)
-                .setDescription(getLeaderBoard(playerTrivia));
+                .setTitle(`**A música era: ${song}**`)
+                .setDescription(getLeaderBoard(playerTrivia))
+                .setThumbnail(queue.currentTrack.thumbnail)
+                .setFooter({ text: `Quiz de música - Faixa ${queue.tracks.data.length && queue.tracks.data.length >= 0 ? 15 - queue.tracks.data.length : '15'}/15` })
 
             queue.metadata.send({ embeds: [embed] });
 

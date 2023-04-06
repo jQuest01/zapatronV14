@@ -1,6 +1,7 @@
 require('dotenv').config()
 const { Client, GatewayIntentBits, Collection, Interaction, EmbedBuilder } = require("discord.js")
 const { Player } = require('discord-player');
+const { normalizeValue } = require('./src/trivia/triviaUtils')
 
 global.client = new Client({
     intents: [GatewayIntentBits.Guilds,
