@@ -21,7 +21,7 @@ function TriviaPlayer(nickname, id, disc) {
 }
 
 module.exports = {
-    async trivia(message) {
+    async quiz(message) {
         if (!message.member.voice.channelId) {
             await message.channel.send({
                 embeds: [new EmbedBuilder().setTitle('Erro').setDescription('Entre no chat de voz primeiro').setColor("#FF0000")]

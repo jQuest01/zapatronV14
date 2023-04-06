@@ -1,4 +1,4 @@
-const { EmbedBuilder, MessageCollector } = require('discord.js');
+const { EmbedBuilder } = require('discord.js');
 const { normalizeValue, atualizaTriviaPlayer, getTriviaPlayer, capitalizeWords, getLeaderBoard } = require('../trivia/triviaUtils')
 const fs = require('fs')
 
@@ -44,7 +44,7 @@ function triviaControl(queue) {
     let songNameFound = false;
     let songSingerFound = false;
 
-    const collector = queue.metadata.createMessageCollector({ filter: (m) => getTriviaPlayer(m.author.id), time: 35000 })
+    const collector = queue.metadata.createMessageCollector({ filter: (m) => getTriviaPlayer(m.author.id), time: 60000 })
 
     collector.on('collect', async msg => {
         try {
@@ -63,7 +63,7 @@ function triviaControl(queue) {
 
             let guess = normalizeValue(msg.content);
             //se chutou os dois
-            if (singersAnswer.some(value => guess.match(normalizeValue(value))) && guess.match(nameAnswer)) {
+            if (singersAnswer.some(value => guess.match(normalizeValue(value)) || value.match(normalizeValue(guess))) && guess.match(nameAnswer)) {
                 if ((songSingerFound && !songNameFound) || (songNameFound && !songSingerFound)) {
                     const tPlayer = getTriviaPlayer(msg.author.id)
                     atualizaTriviaPlayer(msg.author.id, tPlayer.points + 1)
@@ -76,7 +76,7 @@ function triviaControl(queue) {
                 return collector.stop();
             }
             //se chutou os cantores
-            else if (singersAnswer.some(value => guess.match(normalizeValue(value)))) {
+            else if (singersAnswer.some(value => guess.match(normalizeValue(value)) || value.match(normalizeValue(guess)))) {
                 if (songSingerFound) return; // already been found
 
                 songSingerFound = true;
@@ -111,7 +111,7 @@ function triviaControl(queue) {
 
             else if (guess === 'skip') {
                 return collector.stop()
-            } else if (guess === '-stop') {
+            } else if (guess === 'stop') {
                 const embed = new EmbedBuilder()
                     .setColor('#ff7373')
                     .setTitle(`Fim`)
@@ -197,6 +197,7 @@ player.events.on('audioTrackAdd', (queue, track) => {
 });
 
 player.events.on('disconnect', (queue) => {
+    isTriviaOn = false
     queue.metadata.send({
         embeds: [new EmbedBuilder()
             .setTitle("**Desconectado**")
