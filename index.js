@@ -2,6 +2,7 @@ require('dotenv').config()
 const { Client, GatewayIntentBits, Collection, Interaction, EmbedBuilder } = require("discord.js")
 const { Player } = require('discord-player');
 const { normalizeValue } = require('./src/trivia/triviaUtils')
+const { YoutubeExtractor } = require('@discord-player/extractor');
 
 global.client = new Client({
     intents: [GatewayIntentBits.Guilds,
@@ -14,13 +15,16 @@ global.client = new Client({
 
 global.player = new Player(client)
 
+const ytext = player.extractors.get(YoutubeExtractor.identifier);
+console.log(ytext);
+
 client.on('messageCreate', async (message) => {
     if (message.author.bot) {
         return
     }
     if (message.content.startsWith('-')) {
         let comando = message.content.substring(1).split(/ +/)[0]
-        if (['720766817588478054', '881559023613272064'].includes(message.channelId) || (comando === 'quiz' && message.channelId === '1093357469079715840')) {
+        // if (['720766817588478054', '881559023613272064'].includes(message.channelId) || (comando === 'quiz' && message.channelId === '1093357469079715840')) {
             try {
                 const func = require('./src/controller/comandosController')[comando]
                 const retorno = await func(message)
@@ -31,9 +35,9 @@ client.on('messageCreate', async (message) => {
                 console.log(error)
                 message.channel.send({ embeds: [new EmbedBuilder().setTitle('Erro').setDescription('Esse comando não existe').setColor("#FF0000")] })
             }
-        } else {
-            message.channel.send({ embeds: [new EmbedBuilder().setTitle('Erro').setDescription('Comandos permitidos apenas no canal <#720766817588478054>').setColor("#FF0000")] })
-        }
+        // } else {
+        //     message.channel.send({ embeds: [new EmbedBuilder().setTitle('Erro').setDescription('Comandos permitidos apenas no canal <#720766817588478054>').setColor("#FF0000")] })
+        // }
     }
 })
 
