@@ -55,6 +55,22 @@ module.exports = {
             }
         }
 
+        const embed = new EmbedBuilder()
+            .setTitle('🎵 O Quiz de Música vai começar em breve')
+            .setDescription(`Serão 15 músicas, 30 segundos por música.
+            Tem que acertar tanto o cantor (ou um deles) e a música.
+            
+            + 1 ponto pelo(s) cantor(es)
+            + 1 ponto pelo nome da música
+            ------------------------------
+            2 pontos por ambos
+            
+            🔥 O quiz vai começar em 10 segundos`)
+            .setImage('https://www.useyourlocal.com/imgs/pub_events/730w/151119-093735_quiz-time.jpg')
+            .setColor('#60d1f6')
+
+        message.channel.send({ embeds: [embed] })
+
         await player.play(message.member.voice.channel, 'https://www.youtube.com/watch?v=poRbwlbtSh0', {
             nodeOptions: {
                 metadata: message.channel

@@ -55,12 +55,12 @@ module.exports = {
         if (!arr[0]) return ''; // issue #422
         let leaderBoard = '';
 
-        leaderBoard = `👑   **<@${arr[0].id}>:** ${arr[0].points}  pontos`;
+        leaderBoard += `👑   **<@${arr[0].id}>:** ${arr[0].points}  pontos`;
 
         if (arr.length > 1) {
             for (let i = 1; i < arr.length; i++) {
                 leaderBoard =
-                    leaderBoard + `\n\n   ${i + 1}: <@${arr[i].id}>: ${arr[i].points}  pontos`;
+                    leaderBoard + `\n\n   ${i + 1}º - <@${arr[i].id}>: ${arr[i].points}  pontos`;
             }
         }
         return leaderBoard;

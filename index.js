@@ -1,8 +1,6 @@
 require('dotenv').config()
 const { Client, GatewayIntentBits, Collection, Interaction, EmbedBuilder } = require("discord.js")
 const { Player } = require('discord-player');
-const { normalizeValue } = require('./src/trivia/triviaUtils')
-const { YoutubeExtractor } = require('@discord-player/extractor');
 
 global.client = new Client({
     intents: [GatewayIntentBits.Guilds,
@@ -14,9 +12,6 @@ global.client = new Client({
 })
 
 global.player = new Player(client)
-
-const ytext = player.extractors.get(YoutubeExtractor.identifier);
-console.log(ytext);
 
 client.on('messageCreate', async (message) => {
     if (message.author.bot) {

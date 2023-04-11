@@ -12,117 +12,122 @@ player.events.on('playerError', (queue, error) => {
 
 player.events.on('playerStart', async (queue, track) => {
     if (!isTriviaOn) {
-        const embed = new EmbedBuilder()
-            .setTitle('A música que tá tocando é essa: ')
-            .setDescription(`\n[${track.title}](${track.url})`)
-            .setImage(track.thumbnail)
-            .setColor("0099ff")
-            .setFooter({
-                text: `Adicionado por ${track.requestedBy.tag}`,
-                iconURL: track.requestedBy.avatarURL()
+        try {
+            const embed = new EmbedBuilder()
+                .setTitle('A música que tá tocando é essa: ')
+                .setDescription(`\n[${track.title}](${track.url})`)
+                .setImage(track.thumbnail)
+                .setColor("0099ff")
+                .setFooter({
+                    text: `Adicionado por ${track.requestedBy.tag}`,
+                    iconURL: track.requestedBy.avatarURL()
+                })
+            queue.metadata.send({ embeds: [embed] }).then(msg => {
+                setTimeout(() => {
+                    try {
+                        msg.delete()
+                    } catch (error) {
+                        console.log(new Date().toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" }), error)
+                    }
+                }, track.durationMS)
             })
-        queue.metadata.send({ embeds: [embed] }).then(msg => {
-            setTimeout(() => {
-                try {
-                    msg.delete()
-                } catch (error) {
-                    console.log(new Date(), error)
-                }
-            }, track.durationMS)
-        }).catch(err => console.log(new Date(), err))
+        } catch (error) {
+            console.log(new Date().toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" }), error)
+        }
+
     } else {
         if (queue.currentTrack.url !== 'https://www.youtube.com/watch?v=poRbwlbtSh0') {
             // await queue.node.seek(30000)
 
-            triviaControl(queue)
+            await triviaControl(queue)
         }
     }
 });
 
-function triviaControl(queue) {
+function checkSong(nameAnswer, guess) {
+    return guess.match(nameAnswer) || nameAnswer.match(guess)
+}
+
+function checkSinger(singersAnswer, guess) {
+    return singersAnswer.some(value => guess.match(normalizeValue(value)) || value.match(normalizeValue(guess)))
+}
+
+function checkBoth(nameAnswer, singersAnswer, guess) {
+    return singersAnswer.some(value => guess.match(normalizeValue(value)) || value.match(normalizeValue(guess))) && (guess.match(nameAnswer) || nameAnswer.match(guess))
+}
+
+async function triviaControl(queue) {
     let song = queue.currentTrack.url
     let songNameFound = false;
     let songSingerFound = false;
 
-    const collector = queue.metadata.createMessageCollector({ filter: (m) => getTriviaPlayer(m.author.id), time: 60000 })
+    const songsJson = JSON.parse(fs.readFileSync(
+        './src/resources/songs.json',
+        'utf-8'
+    ))
+    const songFiltrado = songsJson.filter((e) => { return e.url === song })[0]
+
+    let nameAnswer = ''
+    let singersAnswer = []
+
+    console.log(songFiltrado, new Date().toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" }))
+
+    nameAnswer = normalizeValue(songFiltrado.title.toLowerCase())
+    singersAnswer = songFiltrado.singers
+
+    const filter = response => {
+        if (!getTriviaPlayer(response.author.id)) return false;
+
+        const guess = normalizeValue(response.content);
+
+        if (checkBoth(nameAnswer, singersAnswer, guess)) {
+            response.react('☑');
+            return true
+        } else if ((checkSinger(singersAnswer, guess) && !songSingerFound) || (checkSong(nameAnswer, guess) && !songNameFound)) {
+            response.react('☑');
+            return true
+        } else {
+            response.react('❌')
+            return false
+        }
+    };
+
+    const collector = queue.metadata.createMessageCollector({ filter, max: 2, time: 30000 })
 
     collector.on('collect', async msg => {
         try {
-            let nameAnswer = ''
-            let singersAnswer = []
-
-            const songsJson = JSON.parse(fs.readFileSync(
-                './src/resources/songs.json',
-                'utf-8'
-            ))
-
-            const songFiltrado = songsJson.filter((e) => { return e.url === song })[0]
-
-            nameAnswer = normalizeValue(songFiltrado.title.toLowerCase())
-            singersAnswer = songFiltrado.singers
-
-            let guess = normalizeValue(msg.content);
+            const guess = normalizeValue(msg.content);
             //se chutou os dois
-            if (singersAnswer.some(value => guess.match(normalizeValue(value)) || value.match(normalizeValue(guess))) && guess.match(nameAnswer)) {
+            if (checkBoth(nameAnswer, singersAnswer, guess)) {
                 if ((songSingerFound && !songNameFound) || (songNameFound && !songSingerFound)) {
                     const tPlayer = getTriviaPlayer(msg.author.id)
                     atualizaTriviaPlayer(msg.author.id, tPlayer.points + 1)
-                    msg.react('☑');
-                    return collector.stop();
                 }
                 const tPlayer = getTriviaPlayer(msg.author.id)
                 atualizaTriviaPlayer(msg.author.id, tPlayer.points + 2)
-                msg.react('☑');
-                return collector.stop();
+
+                songSingerFound = songSingerFound ? songSingerFound : true
+                songNameFound = songNameFound ? songNameFound : true
             }
             //se chutou os cantores
-            else if (singersAnswer.some(value => guess.match(normalizeValue(value)) || value.match(normalizeValue(guess)))) {
+            else if (checkSinger(singersAnswer, guess)) {
                 if (songSingerFound) return; // already been found
-
                 songSingerFound = true;
-                if (songNameFound && songSingerFound) {
-                    const tPlayer = getTriviaPlayer(msg.author.id)
-                    atualizaTriviaPlayer(msg.author.id, tPlayer.points + 1)
-                    msg.react('☑');
-                    return collector.stop();
-                }
-
                 const tPlayer = getTriviaPlayer(msg.author.id)
                 atualizaTriviaPlayer(msg.author.id, tPlayer.points + 1)
-                msg.react('☑');
+
             }
             // se chutou a música
-            else if (guess.match(nameAnswer) || nameAnswer.match(guess)) {
+            else if (checkSong(nameAnswer, guess)) {
                 if (songNameFound) return; // already been guessed
                 songNameFound = true;
 
-                if (songNameFound && songSingerFound) {
-                    const tPlayer = getTriviaPlayer(msg.author.id)
-                    atualizaTriviaPlayer(msg.author.id, tPlayer.points + 1)
-                    msg.react('☑');
-                    return collector.stop();
-                }
-
                 const tPlayer = getTriviaPlayer(msg.author.id)
                 atualizaTriviaPlayer(msg.author.id, tPlayer.points + 1)
-                msg.react('☑');
             }
-            // se chutou e errou tudo
 
-            else if (guess === 'skip') {
-                return collector.stop()
-            } else if (guess === 'stop') {
-                const embed = new EmbedBuilder()
-                    .setColor('#ff7373')
-                    .setTitle(`Fim`)
-                    .setDescription('Quiz finalizado a pedidos');
-
-                queue.metadata.send({ embeds: [embed] });
-                queue.delete()
-                return collector.stop()
-            }
-            else {
-                return msg.react('❌');
+            if (songNameFound && songSingerFound) {
+                return collector.stop();
             }
         } catch (error) {
             console.log(error)
@@ -148,22 +153,28 @@ function triviaControl(queue) {
                 return b.points - a.points;
             })
 
-            const song = `${capitalizeWords(
-                singersAnswer.join(', ')
-            )}: ${capitalizeWords(nameAnswer)}`;
+            const song = `${capitalizeWords(nameAnswer)} - ${capitalizeWords(singersAnswer.join(' & '))}`;
 
             const embed = new EmbedBuilder()
-                .setColor('#ff7373')
+                .setColor('#60d1f6')
                 .setTitle(`**A música era: ${song}**`)
-                .setDescription(getLeaderBoard(playerTrivia))
+                .setDescription('**__PLACAR DE XP__**\n\n' + getLeaderBoard(playerTrivia))
                 .setThumbnail(queue.currentTrack.thumbnail)
                 .setFooter({ text: `Quiz de música - Faixa ${queue.tracks.data.length && queue.tracks.data.length >= 0 ? 15 - queue.tracks.data.length : '15'}/15` })
 
-            queue.metadata.send({ embeds: [embed] });
+            await queue.metadata.send({ embeds: [embed] });
 
             if (!queue.tracks.data.length) {
                 queue.delete();
                 isTriviaOn = false
+
+                const embed = new EmbedBuilder()
+                    .setColor('#60d1f6')
+                    .setTitle('**Classificação do Quiz de Música**')
+                    .setDescription(getLeaderBoard(playerTrivia))
+
+                await queue.metadata.send({ content: 'O Quiz de música acabou', embeds: [embed] });
+
                 return;
             }
 
@@ -188,10 +199,10 @@ player.events.on('audioTrackAdd', (queue, track) => {
                     try {
                         msg.delete()
                     } catch (error) {
-                        console.log(new Date(), error)
+                        console.log(new Date().toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" }), error)
                     }
                 }, 10000)
-            }).catch(err => console.log(new Date(), err))
+            }).catch(err => console.log(new Date().toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" }), err))
         }
     }
 });
@@ -238,9 +249,9 @@ player.events.on('audioTracksAdd', (queue, tracks) => {
                 try {
                     msg.delete()
                 } catch (error) {
-                    console.log(new Date(), error)
+                    console.log(new Date().toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" }), error)
                 }
             }, 10000)
-        }).catch(err => console.log(new Date(), err))
+        }).catch(err => console.log(new Date().toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" }), err))
     }
 });
