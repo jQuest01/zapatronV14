@@ -22,73 +22,78 @@ function TriviaPlayer(nickname, id, disc) {
 
 module.exports = {
     async quiz(message) {
-        if (!message.member.voice.channelId) {
-            await message.channel.send({
-                embeds: [new EmbedBuilder().setTitle('Erro').setDescription('Entre no chat de voz primeiro').setColor("#FF0000")]
-            })
-
-            return null
-        }
-
-        if (isTriviaOn) {
-            await message.channel.send({
-                embeds: [new EmbedBuilder().setTitle('Erro').setDescription('Já tem um quiz rodando, espere esse acabar pra começar outro').setColor("#FF0000")]
-            })
-
-            return null
-        }
-
-        const jsonSongs = fs.readFileSync(
-            './src/resources/songs.json',
-            'utf-8'
-        );
-
-        const songsJson = getRandom(JSON.parse(jsonSongs), 15)
-
-        isTriviaOn = true
-        playerTrivia = []
-
-        const members = client.channels.cache.get(message.member.voice.channelId).members
-        for (const mem of members) {
-            if (mem[1].user.id !== '880450004123258990') {
-                playerTrivia.push(new TriviaPlayer(mem[1].user.username, mem[1].user.id, mem[1].user.discriminator))
-            }
-        }
-
-        const embed = new EmbedBuilder()
-            .setTitle('🎵 O Quiz de Música vai começar em breve')
-            .setDescription(`Serão 15 músicas, 30 segundos por música.
-            Tem que acertar tanto o cantor (ou um deles) e a música.
-            
-            + 1 ponto pelo(s) cantor(es)
-            + 1 ponto pelo nome da música
-            ------------------------------
-            2 pontos por ambos
-            
-            🔥 O quiz vai começar em 10 segundos`)
-            .setImage('https://www.useyourlocal.com/imgs/pub_events/730w/151119-093735_quiz-time.jpg')
-            .setColor('#60d1f6')
-
-        message.channel.send({ embeds: [embed] })
-
-        await player.play(message.member.voice.channel, 'https://www.youtube.com/watch?v=poRbwlbtSh0', {
-            nodeOptions: {
-                metadata: message.channel
-            }
-        });
-
-        for (let i = 0; i < 15; i++) {
-            try {
-                await player.play(message.member.voice.channel, songsJson[i].url, {
-                    nodeOptions: {
-                        metadata: message.channel
-                    }
+        try {
+            if (!message.member.voice.channelId) {
+                await message.channel.send({
+                    embeds: [new EmbedBuilder().setTitle('Erro').setDescription('Entre no chat de voz primeiro').setColor("#FF0000")]
                 })
-            } catch (error) {
-                console.log(error)
+
+                return null
             }
 
+            if (isTriviaOn) {
+                await message.channel.send({
+                    embeds: [new EmbedBuilder().setTitle('Erro').setDescription('Já tem um quiz rodando, espere esse acabar pra começar outro').setColor("#FF0000")]
+                })
+
+                return null
+            }
+
+            const jsonSongs = fs.readFileSync(
+                './src/resources/songs.json',
+                'utf-8'
+            );
+
+            const songsJson = getRandom(JSON.parse(jsonSongs), 15)
+
+            isTriviaOn = true
+            playerTrivia = []
+
+            const members = client.channels.cache.get(message.member.voice.channelId).members
+            for (const mem of members) {
+                if (mem[1].user.id !== '880450004123258990') {
+                    playerTrivia.push(new TriviaPlayer(mem[1].user.username, mem[1].user.id, mem[1].user.discriminator))
+                }
+            }
+
+            const embed = new EmbedBuilder()
+                .setTitle('🎵 O Quiz de Música vai começar em breve')
+                .setDescription(`Serão 15 músicas, 30 segundos por música.
+                Tem que acertar tanto o cantor (ou um deles) e a música.
+                
+                + 1 ponto pelo(s) cantor(es)
+                + 1 ponto pelo nome da música
+                ------------------------------
+                2 pontos por ambos
+                
+                🔥 O quiz vai começar em 10 segundos`)
+                .setImage('https://www.useyourlocal.com/imgs/pub_events/730w/151119-093735_quiz-time.jpg')
+                .setColor('#60d1f6')
+
+            await player.play(message.member.voice.channel, 'https://www.youtube.com/watch?v=HtDzVSgjjEc', {
+                nodeOptions: {
+                    metadata: message.channel
+                }
+            });
+
+            await message.channel.send({ embeds: [embed] })
+
+            for (let i = 0; i < 15; i++) {
+                try {
+                    await player.play(message.member.voice.channel, songsJson[i].url, {
+                        nodeOptions: {
+                            metadata: message.channel
+                        }
+                    })
+                } catch (error) {
+                    console.log(error)
+                }
+
+            }
+        } catch (error) {
+            console.log(error)
         }
+
     },
 
     async play(message) {

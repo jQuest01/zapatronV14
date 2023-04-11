@@ -1,35 +1,45 @@
+function existe(arr, obj) {
+    const index = arr.findIndex((e) => { return e.url === obj.url })
+    if (index === -1) return null
+    return arr[index]
+}
+
 module.exports = {
 
     atualizaTriviaPlayer(id, pontos) {
         const index = playerTrivia.findIndex((e) => { return e.id === id })
 
         playerTrivia[index].points = pontos
+
+        return playerTrivia[index]
     },
 
     getTriviaPlayer(id) {
         const index = playerTrivia.findIndex((e) => { return e.id === id })
 
-        if(index === -1){
+        if (index === -1) {
             return null
         }
         return playerTrivia[index]
     },
 
-
-
     getRandom(arr, n) {
-        var result = new Array(n),
-            len = arr.length,
-            taken = new Array(len);
+        let result = []
+        const len = arr.length
+
         if (n > len)
             throw new RangeError('getRandom: more elements taken than available!');
         while (n--) {
-            var x = Math.floor(Math.random() * len);
-            // prettier-ignore
-            result[n] = arr[(x in taken) ? taken[x] : x];
-            // prettier-ignore
-            taken[x] = (--len in taken) ? taken[len] : len;
-            // prettier-ignore-end
+            let x = Math.floor(Math.random() * len);
+
+            if (existe(result, arr[x])) {
+                while (existe(result, arr[x])) {
+                    x = Math.floor(Math.random() * len);
+                }
+            }
+
+            result.push(arr[x])
+
         }
         return result;
     },

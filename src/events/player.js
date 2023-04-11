@@ -36,7 +36,7 @@ player.events.on('playerStart', async (queue, track) => {
         }
 
     } else {
-        if (queue.currentTrack.url !== 'https://www.youtube.com/watch?v=poRbwlbtSh0') {
+        if (queue.currentTrack.url !== 'https://www.youtube.com/watch?v=HtDzVSgjjEc') {
             // await queue.node.seek(30000)
 
             await triviaControl(queue)
@@ -56,6 +56,18 @@ function checkBoth(nameAnswer, singersAnswer, guess) {
     return singersAnswer.some(value => guess.match(normalizeValue(value)) || value.match(normalizeValue(guess))) && (guess.match(nameAnswer) || nameAnswer.match(guess))
 }
 
+function getMenor(singersAnswer) {
+    let menor = 99
+
+    for (let i = 0; i < singersAnswer.length; i++) {
+        if (menor > singersAnswer[i].length) {
+            menor = singersAnswer[i].length
+        }
+    }
+
+    return menor
+}
+
 async function triviaControl(queue) {
     let song = queue.currentTrack.url
     let songNameFound = false;
@@ -70,7 +82,7 @@ async function triviaControl(queue) {
     let nameAnswer = ''
     let singersAnswer = []
 
-    console.log(songFiltrado, new Date().toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" }))
+    console.log(songFiltrado, new Date().toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" }), song)
 
     nameAnswer = normalizeValue(songFiltrado.title.toLowerCase())
     singersAnswer = songFiltrado.singers
@@ -80,7 +92,10 @@ async function triviaControl(queue) {
 
         const guess = normalizeValue(response.content);
 
-        if (checkBoth(nameAnswer, singersAnswer, guess)) {
+        if (guess.length < nameAnswer.length / 2 && guess.length < getMenor(singersAnswer)) {
+            response.react('❌')
+            return false
+        } else if (checkBoth(nameAnswer, singersAnswer, guess)) {
             response.react('☑');
             return true
         } else if ((checkSinger(singersAnswer, guess) && !songSingerFound) || (checkSong(nameAnswer, guess) && !songNameFound)) {
@@ -95,6 +110,8 @@ async function triviaControl(queue) {
     const collector = queue.metadata.createMessageCollector({ filter, max: 2, time: 30000 })
 
     collector.on('collect', async msg => {
+        const queue2 = player.nodes.get('703253020716171365')
+        if (queue2.currentTrack.url !== song) return collector.stop()
         try {
             const guess = normalizeValue(msg.content);
             //se chutou os dois
@@ -134,7 +151,10 @@ async function triviaControl(queue) {
         }
     })
 
-    collector?.on('end', async () => {
+    collector.on('end', async () => {
+        const queue2 = player.nodes.get('703253020716171365')
+        if (queue2.currentTrack.url !== song) return
+
         try {
             let musica = queue.currentTrack.url
             let nameAnswer = ''
@@ -182,7 +202,7 @@ async function triviaControl(queue) {
         } catch (error) {
             console.log(error)
         }
-    });
+    })
 }
 
 player.events.on('audioTrackAdd', (queue, track) => {
