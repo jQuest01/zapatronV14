@@ -1479,7 +1479,7 @@
     },
     {
         "title": "Happier Than Ever",
-        "url": "https://www.youtube.com/watch?v=UVQREpxmN_U&t=148s",
+        "url": "https://www.youtube.com/watch?v=UVQREpxmN_U",
         "singers": [
             "Billie Eilish"
         ]
@@ -1871,6 +1871,90 @@
         "url": "https://www.youtube.com/watch?v=1kz6hNDlEEg",
         "singers": [
             "Paramore"
+        ]
+    },
+    {
+        "title": "In Da Club",
+        "url": "https://www.youtube.com/watch?v=5qm8PH4xAss",
+        "singers": [
+            "50 cent"
+        ]
+    },
+    {
+        "title": "Lose Yourself",
+        "url": "https://www.youtube.com/watch?v=tR1ECf4sEpw",
+        "singers": [
+            "Eminem"
+        ]
+    },
+    {
+        "title": "That's My Way",
+        "url": "https://www.youtube.com/watch?v=meH3disCrdY",
+        "singers": [
+            "Edi Rock Ft. Seu Jorge"
+        ]
+    },
+    {
+        "title": "Without Me",
+        "url": "https://www.youtube.com/watch?v=-8xhmV3JoG4",
+        "singers": [
+            "Eminem"
+        ]
+    },
+    {
+        "title": "The Real Slim Shady",
+        "url": "https://www.youtube.com/watch?v=UMPofnwxgKI",
+        "singers": [
+            "Eminem"
+        ]
+    },
+    {
+        "title": "Rap God",
+        "url": "https://www.youtube.com/watch?v=9dojk4u7vUU",
+        "singers": [
+            "Eminem"
+        ]
+    },
+    {
+        "title": "Stan",
+        "url": "https://www.youtube.com/watch?v=kt14c7sYTFA",
+        "singers": [
+            "Eminem ft. Dido"
+        ]
+    },
+    {
+        "title": "Só Os Loucos Sabem",
+        "url": "https://www.youtube.com/watch?v=Tk98pgrR2oU",
+        "singers": [
+            "Charlie Brown Jr"
+        ]
+    },
+    {
+        "title": "Dias De Luta, Dias De Gloria",
+        "url": "https://www.youtube.com/watch?v=XdKG7oElVvA",
+        "singers": [
+            "Charlie Brown Jr"
+        ]
+    },
+    {
+        "title": "Ela Vai Voltar",
+        "url": "https://www.youtube.com/watch?v=7o9otAez9Qo",
+        "singers": [
+            "Charlie Brown Jr"
+        ]
+    },
+    {
+        "title": "Céu Azul",
+        "url": "https://www.youtube.com/watch?v=K8zbYy0g2v0",
+        "singers": [
+            "Charlie Brown Jr"
+        ]
+    },
+    {
+        "title": "Só Por Uma Noite",
+        "url": "https://www.youtube.com/watch?v=MPw-iedt9GA",
+        "singers": [
+            "Charlie Brown Jr"
         ]
     }
 ]

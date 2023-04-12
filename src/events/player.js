@@ -89,9 +89,10 @@ async function triviaControl(queue) {
 
     const filter = response => {
         if (!getTriviaPlayer(response.author.id)) return false;
+        if (queue.currentTrack.url !== song) return false
 
         const guess = normalizeValue(response.content);
-
+        
         if (guess.length < nameAnswer.length / 2 && guess.length < getMenor(singersAnswer)) {
             response.react('❌')
             return false
@@ -110,8 +111,6 @@ async function triviaControl(queue) {
     const collector = queue.metadata.createMessageCollector({ filter, max: 2, time: 30000 })
 
     collector.on('collect', async msg => {
-        const queue2 = player.nodes.get('703253020716171365')
-        if (queue2.currentTrack.url !== song) return collector.stop()
         try {
             const guess = normalizeValue(msg.content);
             //se chutou os dois
@@ -152,9 +151,6 @@ async function triviaControl(queue) {
     })
 
     collector.on('end', async () => {
-        const queue2 = player.nodes.get('703253020716171365')
-        if (queue2.currentTrack.url !== song) return
-
         try {
             let musica = queue.currentTrack.url
             let nameAnswer = ''
