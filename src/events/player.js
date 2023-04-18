@@ -82,17 +82,16 @@ async function triviaControl(queue) {
     let nameAnswer = ''
     let singersAnswer = []
 
-    console.log(songFiltrado, new Date().toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" }), song)
+    if (!songFiltrado) console.log(songFiltrado, new Date().toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" }), song)
 
     nameAnswer = normalizeValue(songFiltrado.title.toLowerCase())
     singersAnswer = songFiltrado.singers
 
     const filter = response => {
         if (!getTriviaPlayer(response.author.id)) return false;
-        if (queue.currentTrack.url !== song) return false
 
         const guess = normalizeValue(response.content);
-        
+
         if (guess.length < nameAnswer.length / 2 && guess.length < getMenor(singersAnswer)) {
             response.react('❌')
             return false
@@ -112,6 +111,18 @@ async function triviaControl(queue) {
 
     collector.on('collect', async msg => {
         try {
+            const queue2 = player.nodes.get('703253020716171365')
+
+            if (!queue2 || queue2.currentTrack.url !== song) {
+                await queue.node.play(song, {
+                    nodeOptions: {
+                        metadata: queue.metadata
+                    }
+                })
+
+                return collector.stop();
+            }
+
             const guess = normalizeValue(msg.content);
             //se chutou os dois
             if (checkBoth(nameAnswer, singersAnswer, guess)) {
@@ -155,6 +166,9 @@ async function triviaControl(queue) {
             let musica = queue.currentTrack.url
             let nameAnswer = ''
             let singersAnswer = []
+
+            const queue2 = player.nodes.get('703253020716171365')
+            if (!queue2 || queue2.currentTrack.url !== musica) return
 
             const songsJson = JSON.parse(fs.readFileSync(
                 './src/resources/songs.json',
