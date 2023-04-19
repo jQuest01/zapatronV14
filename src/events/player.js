@@ -88,7 +88,10 @@ async function triviaControl(queue) {
     singersAnswer = songFiltrado.singers
 
     const filter = response => {
+        const queue2 = player.nodes.get('703253020716171365')
+
         if (!getTriviaPlayer(response.author.id)) return false;
+        if (!queue2 || queue2.currentTrack.url !== song) return false
 
         const guess = normalizeValue(response.content);
 
@@ -111,18 +114,6 @@ async function triviaControl(queue) {
 
     collector.on('collect', async msg => {
         try {
-            const queue2 = player.nodes.get('703253020716171365')
-
-            if (!queue2 || queue2.currentTrack.url !== song) {
-                await queue.node.play(song, {
-                    nodeOptions: {
-                        metadata: queue.metadata
-                    }
-                })
-
-                return collector.stop();
-            }
-
             const guess = normalizeValue(msg.content);
             //se chutou os dois
             if (checkBoth(nameAnswer, singersAnswer, guess)) {
@@ -163,12 +154,20 @@ async function triviaControl(queue) {
 
     collector.on('end', async () => {
         try {
+            const queue2 = player.nodes.get('703253020716171365')
+
+            if (!queue2 || queue2.currentTrack.url !== song) {
+                await queue.node.play(song, {
+                    nodeOptions: {
+                        metadata: queue.metadata
+                    }
+                })
+                return
+            }
+            
             let musica = queue.currentTrack.url
             let nameAnswer = ''
             let singersAnswer = []
-
-            const queue2 = player.nodes.get('703253020716171365')
-            if (!queue2 || queue2.currentTrack.url !== musica) return
 
             const songsJson = JSON.parse(fs.readFileSync(
                 './src/resources/songs.json',
@@ -183,11 +182,11 @@ async function triviaControl(queue) {
                 return b.points - a.points;
             })
 
-            const song = `${capitalizeWords(nameAnswer)} - ${capitalizeWords(singersAnswer.join(' & '))}`;
+            const msc = `${capitalizeWords(nameAnswer)} - ${capitalizeWords(singersAnswer.join(' & '))}`;
 
             const embed = new EmbedBuilder()
                 .setColor('#60d1f6')
-                .setTitle(`**A música era: ${song}**`)
+                .setTitle(`**A música era: ${msc}**`)
                 .setDescription('**__PLACAR DE XP__**\n\n' + getLeaderBoard(playerTrivia))
                 .setThumbnail(queue.currentTrack.thumbnail)
                 .setFooter({ text: `Quiz de música - Faixa ${queue.tracks.data.length && queue.tracks.data.length >= 0 ? 15 - queue.tracks.data.length : '15'}/15` })
