@@ -2,6 +2,7 @@ const { QueryType, QueueRepeatMode } = require('discord-player')
 const { EmbedBuilder, ButtonBuilder, ButtonStyle } = require('discord.js')
 const { getRandom } = require('../trivia/triviaUtils')
 const fs = require('fs')
+const axios = require('axios')
 
 inverteArray = (array) => {
     let newArray = []
@@ -21,6 +22,23 @@ function TriviaPlayer(nickname, id, disc) {
 }
 
 module.exports = {
+    async preenche(message) {
+        const jsonSongs = JSON.parse(fs.readFileSync(
+            './src/resources/songs.json',
+            'utf-8'
+        ))
+
+        for (const song of jsonSongs) {
+            const response = await axios.post(
+                'http://localhost:3000/musicas', JSON.stringify(song),
+                {
+                    headers: { 'Content-type': 'application/json' }
+                }
+            ).then(await new Promise(resolve => setTimeout(resolve, 1000)))
+        }
+
+    },
+
     async quiz(message) {
         try {
             if (!message.member.voice.channelId) {
@@ -376,5 +394,5 @@ module.exports = {
         }
     },
 
-   
+
 }
