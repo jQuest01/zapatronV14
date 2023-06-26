@@ -14,8 +14,6 @@ global.client = new Client({
 
 global.player = new Player(client)
 
-const func = require('./src/controller/comandosController')['preenche']
-
 const key = "12345";
 const decrypted = CryptoJS.AES.decrypt(process.env.DISCORD_BOT_TOKEN, key)
 const token = decrypted.toString(CryptoJS.enc.Utf8);
@@ -45,7 +43,6 @@ client.on('messageCreate', async (message) => {
 
 client.on('ready', async () => {
     console.log('Subiu', new Date().toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" }))
-    await func(null)
 })
 
 global.isTriviaOn = false
