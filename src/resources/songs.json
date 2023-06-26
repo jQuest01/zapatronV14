@@ -1958,11 +1958,101 @@
         ]
     },
     {
-        "title": "This Is How You Fall In Love",
-        "url": "https://www.youtube.com/watch?v=h8k1VpzM8kI",
+        "title": "Snuff",
+        "url": "https://www.youtube.com/watch?v=GiLYto-PhRY",
         "singers": [
-            "Jeremy Zucker",
-            "Chelsea Cutler"
+            "Slipknot"
+        ]
+    },
+    {
+        "title": "Drive",
+        "url": "https://www.youtube.com/watch?v=fgT9zGkiLig",
+        "singers": [
+            "Incubus"
+        ]
+    },
+    {
+        "title": "Helena",
+        "url": "https://www.youtube.com/watch?v=j5br1C9nQeM",
+        "singers": [
+            "My Chemical Romance"
+        ]
+    },
+    {
+        "title": "Scars",
+        "url": "https://www.youtube.com/watch?list=PLOci2rRb5g3iUxFh_olD0dWGpzWPwdlOi&v=eHbNU9WuVgw&feature=youtu.be",
+        "singers": [
+            "Papa Roach"
+        ]
+    },
+    {
+        "title": "Payphone",
+        "url": "https://www.youtube.com/watch?v=KRaWnd3LJfs",
+        "singers": [
+            "Maroon 5 Ft. Wiz Khalifa"
+        ]
+    },
+    {
+        "title": "Wake Me Up",
+        "url": "https://www.youtube.com/watch?v=SsYXnH9lzCY",
+        "singers": [
+            "Avicii"
+        ]
+    },
+    {
+        "title": "The Nights",
+        "url": "https://www.youtube.com/watch?v=2RqaecB-NCA",
+        "singers": [
+            "Avicii"
+        ]
+    },
+    {
+        "title": "Dream On",
+        "url": "https://www.youtube.com/watch?v=OxQ0Y5N7QlM",
+        "singers": [
+            "Aerosmith"
+        ]
+    },
+    {
+        "title": "Viva la vida",
+        "url": "https://www.youtube.com/watch?v=L0aH8bpCEzE",
+        "singers": [
+            "Coldplay"
+        ]
+    },
+    {
+        "title": "Summertime Sadness",
+        "url": "https://www.youtube.com/watch?v=Edv6vD0LJUQ",
+        "singers": [
+            "Lana Del Rey"
+        ]
+    },
+    {
+        "title": "The Scientist",
+        "url": "https://www.youtube.com/watch?v=KfI_wZ2mgjo",
+        "singers": [
+            "Coldplay"
+        ]
+    },
+    {
+        "title": "It's My Life",
+        "url": "https://www.youtube.com/watch?v=VyZeqzWvR7w",
+        "singers": [
+            "Bon Jovi"
+        ]
+    },
+    {
+        "title": "Livin' On A Prayer",
+        "url": "https://www.youtube.com/watch?v=ohFtQIPqGSo",
+        "singers": [
+            "Bon Jovi"
+        ]
+    },
+    {
+        "title": "Always",
+        "url": "https://www.youtube.com/watch?v=EwWMUUe_9PI",
+        "singers": [
+            "Bon Jovi"
         ]
     },
     {
@@ -1971,6 +2061,13 @@
         "singers": [
             "The Weeknd",
             "Ariana Grande"
+        ]
+    },
+    {
+        "title": "Only The Strong",
+        "url": "https://www.youtube.com/watch?v=fB77JrfhY78",
+        "singers": [
+            "Flaw"
         ]
     }
 ]

@@ -1,5 +1,5 @@
 const { QueryType, QueueRepeatMode } = require('discord-player')
-const { EmbedBuilder } = require('discord.js')
+const { EmbedBuilder, ButtonBuilder, ButtonStyle } = require('discord.js')
 const { getRandom } = require('../trivia/triviaUtils')
 const fs = require('fs')
 
@@ -97,21 +97,17 @@ module.exports = {
     },
 
     async play(message) {
-
         try {
             var search = message.options.getString('musica');
         } catch (error) {
             if (!message.member.voice.channelId) {
-                return await message.channel.send({
-                    embeds: [new EmbedBuilder().setTitle('Erro').setDescription('Entre no chat de voz primeiro').setColor("#FF0000")]
-                })
+                return new EmbedBuilder().setTitle('Erro').setDescription('Entre no chat de voz primeiro').setColor("#FF0000")
             }
 
             const comando = message.content.substring(1).split(/ +/)[0]
             const index = message.content.indexOf(" ");
             if (index === -1) {
                 return
-
             }
             var search = message.content.slice(comando.length + 2)
         }
@@ -127,25 +123,8 @@ module.exports = {
             await player.play(message.member.voice.channel, search, {
                 nodeOptions: {
                     selfDeaf: true,
-                    leaveOnEmpty: true,
-                    leaveOnEmptyCooldown: 300000,
-                    leaveOnEnd: true,
-                    leaveOnEndCooldown: 300000,
-                    leaveOnStop: true,
-                    leaveOnStopCooldown: 0,
-                    metadata: message.channel
-                },
-                requestedBy: message.member,
-                searchEngine: query
-            });
-        } catch (error) {
-            await player.play(message.member.voice.channel, search, {
-                nodeOptions: {
-                    selfDeaf: true,
-                    leaveOnEmpty: true,
-                    leaveOnEmptyCooldown: 300000,
-                    leaveOnEnd: true,
-                    leaveOnEndCooldown: 300000,
+                    leaveOnEmpty: false,
+                    leaveOnEnd: false,
                     leaveOnStop: true,
                     leaveOnStopCooldown: 0,
                     metadata: client.channels.cache.get('720766817588478054')
@@ -153,8 +132,9 @@ module.exports = {
                 requestedBy: message.member,
                 searchEngine: query
             });
+        } catch (error) {
+            return new EmbedBuilder().setTitle('Erro').setDescription('Erro ao incluir música/playlist\nTalvez o vídeo seja permitido apenas para maiores de idade').setColor("#FF0000")
         }
-
     },
 
     async p(message) {
@@ -394,5 +374,7 @@ module.exports = {
             }
 
         }
-    }
+    },
+
+   
 }

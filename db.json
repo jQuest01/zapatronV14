@@ -1,0 +1,18 @@
+{
+  "musicas": [
+    {
+      "name": "Curso React: Inserindo dados no banco via API - #24",
+      "link": "https://youtu.be/gIWmB3EV4Bo?list=PLnDvRpP8BneyVA0SZ2okm-QBojomniQVO",
+      "singer": "Matheus",
+      "id": 1
+    },
+    {
+      "name": "Only The Strong",
+      "link": "https://www.youtube.com/watch?v=fB77JrfhY78",
+      "singer": [
+        "Flaw"
+      ],
+      "id": 2
+    }
+  ]
+}

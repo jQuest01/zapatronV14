@@ -1,5 +1,6 @@
 const { ApplicationCommandOptionType } = require('discord.js');
 const fs = require('fs')
+const axios = require('axios')
 
 module.exports = {
     name: 'addsong',
@@ -25,6 +26,7 @@ module.exports = {
     ],
 
     async execute({ inter }) {
+
         await inter.deferReply({ ephemeral: true });
 
         const song = inter.options.getString('nome');
@@ -38,6 +40,19 @@ module.exports = {
         } else {
             singer.push(inter.options.getString('cantor').trim())
         }
+
+        const musica = {
+            "name": song,
+            "link": link,
+            "singer": singer
+        }
+
+        const response = await axios.post(
+            'http://localhost:3000/musicas', JSON.stringify(musica), 
+            {
+                headers: {'Content-type': 'application/json'}
+            }
+        )
 
         const jsonSongs = JSON.parse(fs.readFileSync(
             './src/resources/songs.json',

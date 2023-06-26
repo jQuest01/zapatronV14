@@ -1,5 +1,5 @@
 // client.on("interactionCreate", async (interaction)
-const { InteractionType, EmbedBuilder } = require('discord.js')
+const { InteractionType, EmbedBuilder } = require('discord.js');
 
 module.exports = (client, inter) => {
     if (inter.type === InteractionType.ApplicationCommand) {
@@ -17,5 +17,11 @@ module.exports = (client, inter) => {
             })
         }
         command.execute({ inter, client });
+    } else if (inter.type === InteractionType.ModalSubmit){
+        const command = client.commands.get(inter.message.interaction.commandName)
+        command.execute({inter, client})
+    } else if (inter.type === InteractionType.MessageComponent){
+        const command = client.commands.get(inter.message.interaction.commandName)
+        command.execute({inter, client})
     }
 };

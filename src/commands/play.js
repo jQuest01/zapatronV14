@@ -28,13 +28,17 @@ module.exports = {
 
         const res = await player.search(song, {
             requestedBy: inter.member,
-            searchEngine: QueryType.AUTO
+            searchEngine: query
         });
 
         await inter.editReply({ content: `Adicionando sua ${res.playlist ? 'playlist' : 'música'}... 🎧` });
 
-        await play(inter).then(async () => {
-            await inter.editReply({ content: `${res.playlist ? 'Playlist' : 'Música'} adicionada com sucesso 🎧` });
+        await play(inter).then(async (embed) => {
+            if (embed) {
+                await inter.editReply({ embeds: [embed] });
+            } else {
+                await inter.editReply({ content: `${res.playlist ? 'Playlist' : 'Música'} adicionada com sucesso 🎧` });
+            }
         })
 
     },
