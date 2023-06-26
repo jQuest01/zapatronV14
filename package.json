@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "dev": "concurrently --kill-others \"nodemon index.js\" \"json-server --watch db.json\"",
-    "start": "concurrently --kill-others \"node index.js\" \"json-server --watch db.json\"",
+    "start": "json-server --watch db.json",
     "backend": "json-server --watch db.json",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
