@@ -3,11 +3,6 @@ const { Client, GatewayIntentBits, Collection, Interaction, EmbedBuilder } = req
 const { Player } = require('discord-player');
 const CryptoJS = require("crypto-js");
 
-const jsonServer = require('json-server')
-const server = jsonServer.create()
-const router = jsonServer.router('db.json')
-const middlewares = jsonServer.defaults()
-
 global.client = new Client({
     intents: [GatewayIntentBits.Guilds,
     GatewayIntentBits.GuildVoiceStates,
@@ -18,6 +13,7 @@ global.client = new Client({
 })
 
 global.player = new Player(client)
+global.jsonServer = 'https://zapas.discloud.app'
 
 const key = "12345";
 const decrypted = CryptoJS.AES.decrypt(process.env.DISCORD_BOT_TOKEN, key)
@@ -55,11 +51,5 @@ global.playerTrivia = []
 
 require('./src/events/player')
 require('./src/events/loader')
-
-server.use(middlewares)
-server.use(router)
-server.listen(8080, () => {
-    console.log('JSON Server is running')
-})
 
 client.login(token)

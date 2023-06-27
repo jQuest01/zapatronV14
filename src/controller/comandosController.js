@@ -1,7 +1,7 @@
 const { QueryType, QueueRepeatMode } = require('discord-player')
 const { EmbedBuilder, ButtonBuilder, ButtonStyle } = require('discord.js')
 const { getRandom } = require('../trivia/triviaUtils')
-const fs = require('fs')
+const axios = require('axios')
 
 inverteArray = (array) => {
     let newArray = []
@@ -39,10 +39,7 @@ module.exports = {
                 return null
             }
 
-            const jsonSongs = fs.readFileSync(
-                './src/resources/songs.json',
-                'utf-8'
-            );
+            const jsonSongs = await axios.get(`${jsonServer}/musicas`).then((res) => res.data)
 
             const songsJson = getRandom(JSON.parse(jsonSongs), 15)
 
