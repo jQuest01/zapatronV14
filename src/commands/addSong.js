@@ -46,7 +46,7 @@ module.exports = {
             "singers": singer
         }
 
-        const jsonSongs = await axios.get('http://localhost:3000/musicas').then((res) => res.data)
+        const jsonSongs = await axios.get('http://localhost:8080/musicas').then((res) => res.data)
 
         const result = jsonSongs.filter((s) => {
             return (s.url === link || (s.title === song && s.singers.some(r => singer.includes(r))))
@@ -56,7 +56,7 @@ module.exports = {
             await inter.editReply({ content: 'Adicionando sua música... 🎧' });
 
             const response = await axios.post(
-                'http://localhost:3000/musicas', JSON.stringify(musica),
+                'http://localhost:8080/musicas', JSON.stringify(musica),
                 {
                     headers: { 'Content-type': 'application/json' }
                 }

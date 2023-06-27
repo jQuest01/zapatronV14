@@ -2,12 +2,6 @@ require('dotenv').config()
 const { Client, GatewayIntentBits, Collection, Interaction, EmbedBuilder } = require("discord.js")
 const { Player } = require('discord-player');
 const CryptoJS = require("crypto-js");
-const axios = require('axios')
-// const express = require('express')
-
-// global.app = express()
-
-// app.use(express.json())
 
 const jsonServer = require('json-server')
 const server = jsonServer.create()
@@ -22,17 +16,6 @@ global.client = new Client({
     GatewayIntentBits.DirectMessages,
     GatewayIntentBits.MessageContent]
 })
-
-const express = require('express');
-const app = express();
-
-app.get('/', function (req, res) {
-    const ipAddress = req.socket.remoteAddress;
-    console.log(ipAddress)
-    res.send(ipAddress);
-});
-
-app.listen(3001, () => console.log("Server is listening on port 3001"))
 
 global.player = new Player(client)
 
@@ -65,7 +48,6 @@ client.on('messageCreate', async (message) => {
 
 client.on('ready', async () => {
     console.log('Subiu', new Date().toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" }))
-    axios.get('http://localhost:3001')
 })
 
 global.isTriviaOn = false
@@ -73,16 +55,11 @@ global.playerTrivia = []
 
 require('./src/events/player')
 require('./src/events/loader')
-// require('./src/controller/routes')
-
-
 
 server.use(middlewares)
 server.use(router)
-server.listen(3000, () => {
+server.listen(8080, () => {
     console.log('JSON Server is running')
 })
 
 client.login(token)
-
-// app.listen(3000)
