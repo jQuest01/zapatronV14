@@ -53,6 +53,7 @@ client.on('messageCreate', async (message) => {
 
 client.on('ready', async () => {
     console.log('Subiu', new Date().toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" }))
+    console.log(location.host)
 })
 
 global.isTriviaOn = false
