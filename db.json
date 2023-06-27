@@ -2253,7 +2253,7 @@
     },
     {
       "title": "Scars",
-      "url": "https://www.youtube.com/watch?list=PLOci2rRb5g3iUxFh_olD0dWGpzWPwdlOi&v=eHbNU9WuVgw&feature=youtu.be",
+      "url": "https://www.youtube.com/watch?v=eHbNU9WuVgw",
       "singers": [
         "Papa Roach"
       ],
@@ -2347,6 +2347,30 @@
         "Ariana Grande"
       ],
       "id": 284
+    },
+    {
+      "title": "Tears Don't Fall",
+      "url": "https://www.youtube.com/watch?v=9sTQ0QdkN3Q",
+      "singers": [
+        "Bullet For My Valentine"
+      ],
+      "id": 285
+    },
+    {
+      "title": "Broken",
+      "url": "https://www.youtube.com/watch?v=hPC2Fp7IT7o",
+      "singers": [
+        "Seether ft. Amy Lee"
+      ],
+      "id": 286
+    },
+    {
+      "title": "Welcome to the mato",
+      "url": "https://www.youtube.com/watch?v=HW19EW8GM7M",
+      "singers": [
+        "Marco Brasil Filho"
+      ],
+      "id": 287
     }
   ]
 }

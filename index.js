@@ -2,6 +2,16 @@ require('dotenv').config()
 const { Client, GatewayIntentBits, Collection, Interaction, EmbedBuilder } = require("discord.js")
 const { Player } = require('discord-player');
 const CryptoJS = require("crypto-js");
+// const express = require('express')
+
+// global.app = express()
+
+// app.use(express.json())
+
+const jsonServer = require('json-server')
+const server = jsonServer.create()
+const router = jsonServer.router('db.json')
+const middlewares = jsonServer.defaults()
 
 global.client = new Client({
     intents: [GatewayIntentBits.Guilds,
@@ -50,5 +60,14 @@ global.playerTrivia = []
 
 require('./src/events/player')
 require('./src/events/loader')
+// require('./src/controller/routes')
+
+server.use(middlewares)
+server.use(router)
+server.listen(3000, () => {
+  console.log('JSON Server is running')
+})
 
 client.login(token)
+
+// app.listen(3000)

@@ -1,5 +1,4 @@
 const { ApplicationCommandOptionType } = require('discord.js');
-const fs = require('fs')
 const axios = require('axios')
 
 module.exports = {
@@ -42,22 +41,12 @@ module.exports = {
         }
 
         const musica = {
-            "name": song,
-            "link": link,
-            "singer": singer
+            "title": song,
+            "url": link,
+            "singers": singer
         }
 
-        const response = await axios.post(
-            'http://localhost:3000/musicas', JSON.stringify(musica), 
-            {
-                headers: {'Content-type': 'application/json'}
-            }
-        )
-
-        const jsonSongs = JSON.parse(fs.readFileSync(
-            './src/resources/songs.json',
-            'utf-8'
-        ))
+        const jsonSongs = await axios.get('http://localhost:3000/musicas').then((res) => res.data)
 
         const result = jsonSongs.filter((s) => {
             return (s.url === link || (s.title === song && s.singers.some(r => singer.includes(r))))
@@ -66,12 +55,13 @@ module.exports = {
         if (!result.length) {
             await inter.editReply({ content: 'Adicionando sua música... 🎧' });
 
-            jsonSongs.push({
-                title: song,
-                url: link,
-                singers: singer
-            })
-            fs.writeFileSync('./src/resources/songs.json', JSON.stringify(jsonSongs))
+            const response = await axios.post(
+                'http://localhost:3000/musicas', JSON.stringify(musica),
+                {
+                    headers: { 'Content-type': 'application/json' }
+                }
+            )
+
             return await inter.editReply({ content: 'Música adicionada com sucesso' });
         }
         return await inter.editReply({ content: 'Sua música já está na lista.' });
