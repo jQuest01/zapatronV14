@@ -18,6 +18,7 @@ global.jsonServer = 'https://zapas.discloud.app'
 const key = "12345";
 const decrypted = CryptoJS.AES.decrypt(process.env.DISCORD_BOT_TOKEN, key)
 const token = decrypted.toString(CryptoJS.enc.Utf8);
+player.extractors.loadDefault()
 
 client.on('messageCreate', async (message) => {
     if (message.author.bot) {
