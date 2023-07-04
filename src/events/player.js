@@ -1,6 +1,6 @@
 const { EmbedBuilder } = require('discord.js');
 const { normalizeValue, atualizaTriviaPlayer, getTriviaPlayer, capitalizeWords, getLeaderBoard } = require('../trivia/triviaUtils')
-const fs = require('fs')
+const axios = require('axios')
 
 player.events.on('error', (queue, error) => {
     console.log(`Error emitted from the queue ${error.message}`);
@@ -38,7 +38,6 @@ player.events.on('playerStart', async (queue, track) => {
     } else {
         if (queue.currentTrack.url !== 'https://www.youtube.com/watch?v=HtDzVSgjjEc') {
             // await queue.node.seek(30000)
-
             await triviaControl(queue)
         }
     }
@@ -73,11 +72,7 @@ async function triviaControl(queue) {
     let songNameFound = false;
     let songSingerFound = false;
 
-    const songsJson = JSON.parse(fs.readFileSync(
-        './src/resources/songs.json',
-        'utf-8'
-    ))
-    const songFiltrado = songsJson.filter((e) => { return e.url === song })[0]
+    const songFiltrado = await axios.get(`${jsonServer}/musicas`, { params: { url: song } }).then((res) => res.data[0])
 
     let nameAnswer = ''
     let singersAnswer = []
@@ -164,17 +159,12 @@ async function triviaControl(queue) {
                 })
                 return
             }
-            
+
             let musica = queue.currentTrack.url
             let nameAnswer = ''
             let singersAnswer = []
 
-            const songsJson = JSON.parse(fs.readFileSync(
-                './src/resources/songs.json',
-                'utf-8'
-            ))
-
-            musica = songsJson.filter((e) => { return e.url === musica })[0]
+            musica = await axios.get(`${jsonServer}/musicas`, { params: { url: musica } }).then((res) => res.data[0])
             nameAnswer = musica.title.toLowerCase()
             singersAnswer = musica.singers
 
@@ -247,12 +237,14 @@ player.events.on('disconnect', (queue) => {
 });
 
 player.events.on('emptyChannel', (queue) => {
+    isTriviaOn = false
     queue.metadata.send({
         embeds: [new EmbedBuilder()
             .setTitle("**#Abandonado**")
             .setDescription('Já que me abandonaram aqui, vou quitar também ❌')
             .setColor("0099ff")]
     });
+    queue.delete()
 });
 
 player.events.on('emptyQueue', (queue) => {
@@ -262,7 +254,18 @@ player.events.on('emptyQueue', (queue) => {
                 .setTitle("**Finalizou**")
                 .setDescription('Foi bom enquanto durou mas a playlist acabou ✅')
                 .setColor("0099ff")]
-        });
+        }).then(msg => {
+            setTimeout(() => {
+                try {
+                    const queue2 = player.nodes.get('703253020716171365')
+                    if (!queue2 || !queue2.isPlaying()) {
+                        queue2.delete()
+                    }
+                } catch (error) {
+                    console.log(new Date().toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" }), error)
+                }
+            }, 10000)
+        }).catch(err => console.log(new Date().toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" }), err))
     }
 });
 

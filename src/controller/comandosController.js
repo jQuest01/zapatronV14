@@ -41,7 +41,7 @@ module.exports = {
 
             const jsonSongs = await axios.get(`${jsonServer}/musicas`).then((res) => res.data)
 
-            const songsJson = getRandom(JSON.parse(jsonSongs), 15)
+            const songsJson = getRandom(jsonSongs, 15)
 
             isTriviaOn = true
             playerTrivia = []
@@ -120,17 +120,32 @@ module.exports = {
             await player.play(message.member.voice.channel, search, {
                 nodeOptions: {
                     selfDeaf: true,
-                    leaveOnEmpty: false,
+                    leaveOnEmpty: true,
                     leaveOnEnd: false,
                     leaveOnStop: true,
                     leaveOnStopCooldown: 0,
-                    metadata: client.channels.cache.get('720766817588478054')
+                    metadata: message.channel
                 },
                 requestedBy: message.member,
                 searchEngine: query
             });
         } catch (error) {
-            return new EmbedBuilder().setTitle('Erro').setDescription('Erro ao incluir música/playlist\nTalvez o vídeo seja permitido apenas para maiores de idade').setColor("#FF0000")
+            try {
+                await player.play(message.member.voice.channel, search, {
+                    nodeOptions: {
+                        selfDeaf: true,
+                        leaveOnEmpty: true,
+                        leaveOnEnd: false,
+                        leaveOnStop: true,
+                        leaveOnStopCooldown: 0,
+                        metadata: client.channels.cache.get('720766817588478054')
+                    },
+                    requestedBy: message.member,
+                    searchEngine: query
+                });
+            } catch (error) {
+                return new EmbedBuilder().setTitle('Erro').setDescription('Erro ao incluir música/playlist\nTalvez o vídeo seja permitido apenas para maiores de idade').setColor("#FF0000")
+            }
         }
     },
 
@@ -373,5 +388,5 @@ module.exports = {
         }
     },
 
-   
+
 }

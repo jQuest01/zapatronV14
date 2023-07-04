@@ -26,7 +26,7 @@ client.on('messageCreate', async (message) => {
     }
     if (message.content.startsWith('-')) {
         let comando = message.content.substring(1).split(/ +/)[0]
-        if ((comando === 'quiz' && message.channelId === '1093357469079715840') || (comando !== 'quiz' && ['720766817588478054', '881559023613272064'].includes(message.channelId))) {
+        if ((comando === 'quiz' && message.channelId === '1093357469079715840') || (['720766817588478054', '881559023613272064'].includes(message.channelId))) {
             try {
                 const func = require('./src/controller/comandosController')[comando]
                 const retorno = await func(message)
