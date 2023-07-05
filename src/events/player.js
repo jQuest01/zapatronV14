@@ -264,7 +264,7 @@ player.events.on('emptyQueue', (queue) => {
                 } catch (error) {
                     console.log(new Date().toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" }), error)
                 }
-            }, 10000)
+            }, 300000)
         }).catch(err => console.log(new Date().toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" }), err))
     }
 });
