@@ -20,7 +20,6 @@
     "discord-player": "^6.1.1",
     "discord.js": "^14.8.0",
     "dotenv": "^16.0.3",
-    "ffmpeg-static": "^5.1.0",
     "nodemon": "^2.0.22",
     "play-dl": "^1.9.6"
   }
