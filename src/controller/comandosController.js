@@ -109,13 +109,7 @@ module.exports = {
             var search = message.content.slice(comando.length + 2)
         }
 
-        let query = ''
-        if (search.includes('http')) {
-            query = QueryType.AUTO
-        } else {
-            search = search + ' lyrics'
-            query = QueryType.YOUTUBE
-        }
+        let query = QueryType.AUTO
 
         try {
             await player.play(message.member.voice.channel, search, {

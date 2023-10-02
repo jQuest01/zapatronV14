@@ -19,12 +19,7 @@ module.exports = {
         await inter.deferReply({ ephemeral: true });
         const song = inter.options.getString('musica');
 
-        let query = ''
-        if (song.includes('http')) {
-            query = QueryType.AUTO
-        } else {
-            query = QueryType.YOUTUBE
-        }
+        let query = QueryType.AUTO
 
         const res = await player.search(song, {
             requestedBy: inter.member,
