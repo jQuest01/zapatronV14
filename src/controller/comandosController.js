@@ -113,6 +113,7 @@ module.exports = {
         if (search.includes('http')) {
             query = QueryType.AUTO
         } else {
+            search = search + ' lyrics'
             query = QueryType.YOUTUBE
         }
 
@@ -130,6 +131,7 @@ module.exports = {
                 searchEngine: query
             });
         } catch (error) {
+            console.log(error, ' Será feito uma nova tentativa')
             try {
                 await player.play(message.member.voice.channel, search, {
                     nodeOptions: {
@@ -144,6 +146,7 @@ module.exports = {
                     searchEngine: query
                 });
             } catch (error) {
+                console.log(error)
                 return new EmbedBuilder().setTitle('Erro').setDescription('Erro ao incluir música/playlist\nTalvez o vídeo seja permitido apenas para maiores de idade').setColor("#FF0000")
             }
         }
