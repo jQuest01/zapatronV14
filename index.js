@@ -1,6 +1,10 @@
 require('dotenv').config()
 const { Client, GatewayIntentBits, Collection, Interaction, EmbedBuilder } = require("discord.js")
-const { Player } = require('discord-player');
+
+const { DisTube } = require('distube');
+const { SoundCloudPlugin } = require('@distube/soundcloud');
+const { SpotifyPlugin } = require('@distube/spotify');
+
 const CryptoJS = require("crypto-js");
 
 global.client = new Client({
@@ -12,13 +16,22 @@ global.client = new Client({
     GatewayIntentBits.MessageContent]
 })
 
-global.player = new Player(client)
+global.distube = new DisTube(client, {
+    searchCooldown: 30,
+    leaveOnEmpty: true,
+    emptyCooldown: 30,
+    leaveOnFinish: false,
+    nsfw: true,
+    leaveOnStop: true,
+    plugins: [new SoundCloudPlugin(), new SpotifyPlugin()]
+})
+
 global.jsonServer = 'https://zapas.discloud.app'
 
 const key = "12345";
 const decrypted = CryptoJS.AES.decrypt(process.env.DISCORD_BOT_TOKEN, key)
+
 const token = decrypted.toString(CryptoJS.enc.Utf8);
-player.extractors.loadDefault()
 
 client.on('messageCreate', async (message) => {
     if (message.author.bot) {
@@ -50,7 +63,7 @@ client.on('ready', async () => {
 global.isTriviaOn = false
 global.playerTrivia = []
 
-require('./src/events/player')
+require('./src/events/distube')
 require('./src/events/loader')
 
 client.login(token)

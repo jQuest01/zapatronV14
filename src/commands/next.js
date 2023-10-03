@@ -6,6 +6,8 @@ module.exports = {
     voiceChannel: true,
 
     async execute({ inter }) {
+        await inter.deferReply({ ephemeral: true });
         next(inter)
+        await inter.editReply({ content: 'Música skipada' });
     },
 };

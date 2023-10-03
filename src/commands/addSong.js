@@ -1,5 +1,8 @@
 const { ApplicationCommandOptionType } = require('discord.js');
 const axios = require('axios')
+const CryptoJS = require("crypto-js");
+const fs = require('fs')
+const key = "12345";
 
 module.exports = {
     name: 'addsong',
@@ -26,6 +29,11 @@ module.exports = {
 
     async execute({ inter }) {
 
+        let config = JSON.parse(fs.readFileSync('./src/resources/config.json'))
+        const header = {
+            'Authorization': CryptoJS.AES.decrypt(config.token, key).toString(CryptoJS.enc.Utf8)
+        }
+
         await inter.deferReply({ ephemeral: true });
 
         const song = inter.options.getString('nome');
@@ -46,10 +54,10 @@ module.exports = {
             "singers": singer
         }
 
-        const jsonSongs = await axios.get(`${jsonServer}/musicas`).then((res) => res.data)
+        const jsonSongs = await axios.get(`${jsonServer}/musicas`, { headers: header }).then((res) => res.data)
 
         const result = jsonSongs.filter((s) => {
-            return (s.url === link || (s.title === song && s.singers.some(r => singer.includes(r))))
+            return (s.url === link || (s.title.toLowerCase() === song.toLowerCase() && s.singers.some(r => singer.includes(r.toLowerCase()))))
         })
 
         if (!result.length) {
@@ -58,7 +66,10 @@ module.exports = {
             const response = await axios.post(
                 `${jsonServer}/musicas`, JSON.stringify(musica),
                 {
-                    headers: { 'Content-type': 'application/json' }
+                    headers: {
+                        'Authorization': CryptoJS.AES.decrypt(config.token, key).toString(CryptoJS.enc.Utf8),
+                        'Content-type': 'application/json'
+                    }
                 }
             )
 

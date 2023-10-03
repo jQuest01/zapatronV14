@@ -38,7 +38,7 @@ module.exports = {
                 }
             }
 
-            result.push(arr[x])
+            result.push(arr[x].url)
 
         }
         return result;

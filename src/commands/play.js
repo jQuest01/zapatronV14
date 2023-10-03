@@ -1,4 +1,3 @@
-const { QueryType } = require('discord-player');
 const { ApplicationCommandOptionType } = require('discord.js');
 const { play } = require('../controller/comandosController')
 
@@ -17,22 +16,14 @@ module.exports = {
 
     async execute({ inter }) {
         await inter.deferReply({ ephemeral: true });
-        const song = inter.options.getString('musica');
 
-        let query = QueryType.AUTO
-
-        const res = await player.search(song, {
-            requestedBy: inter.member,
-            searchEngine: query
-        });
-
-        await inter.editReply({ content: `Adicionando sua ${res.playlist ? 'playlist' : 'música'}... 🎧` });
+        await inter.editReply({ content: `Adicionando... 🎧` });
 
         await play(inter).then(async (embed) => {
             if (embed) {
                 await inter.editReply({ embeds: [embed] });
             } else {
-                await inter.editReply({ content: `${res.playlist ? 'Playlist' : 'Música'} adicionada com sucesso 🎧` });
+                await inter.editReply({ content: `Adicionado com sucesso 🎧` });
             }
         })
 

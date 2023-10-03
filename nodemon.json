@@ -1,6 +1,7 @@
 {
     "ignore": [
         "./src/resources/songs.json",
+        "./src/resources/config.json",
         "./db.json"
     ]
 }
