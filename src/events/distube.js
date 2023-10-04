@@ -276,8 +276,13 @@ distube.on('empty', async (queue) => {
             .setDescription('Já que me abandonaram aqui, vou quitar também ❌')
             .setColor("0099ff")]
     });
-    const connection = getVoiceConnection(myVoiceChannel.guild.id);
-    connection.disconnect()
+    try {
+        const connection = getVoiceConnection('703253020716171365');
+        connection.disconnect()
+    } catch (error) {
+        console.log(error)
+    }
+
 });
 
 distube.on('finish', (queue) => {
@@ -293,7 +298,8 @@ distube.on('finish', (queue) => {
                 try {
                     const queue2 = distube.getQueue('703253020716171365')
                     if (!queue2 || !queue2.playing()) {
-                        distube.voices.get('703253020716171365').leave();
+                        const connection = getVoiceConnection('703253020716171365');
+                        connection.disconnect()
                     }
                 } catch (error) {
                     console.log(new Date().toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" }), error)
