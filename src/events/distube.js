@@ -4,6 +4,10 @@ const axios = require('axios');
 const CryptoJS = require("crypto-js");
 const fs = require('fs')
 const key = "12345";
+
+const { getVoiceConnection } = require('@discordjs/voice');
+
+
 // const { DisTube } = require('distube');
 // const distube = new DisTube()
 distube.on('error', (queue, error) => {
@@ -263,16 +267,17 @@ distube.on('disconnect', (queue) => {
     });
 });
 
-distube.on('empty', (queue) => {
+distube.on('empty', async (queue) => {
     console.log('trigger empty')
     isTriviaOn = false
-    queue.textChannel.send({
+    await queue.textChannel.send({
         embeds: [new EmbedBuilder()
             .setTitle("**#Abandonado**")
             .setDescription('Já que me abandonaram aqui, vou quitar também ❌')
             .setColor("0099ff")]
     });
-    distube.voices.get('703253020716171365').leave();
+    const connection = getVoiceConnection(myVoiceChannel.guild.id);
+    connection.disconnect()
 });
 
 distube.on('finish', (queue) => {
