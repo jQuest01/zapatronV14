@@ -276,12 +276,6 @@ distube.on('empty', async (queue) => {
             .setDescription('Já que me abandonaram aqui, vou quitar também ❌')
             .setColor("0099ff")]
     });
-    try {
-        const connection = getVoiceConnection('703253020716171365');
-        connection.disconnect()
-    } catch (error) {
-        console.log(error)
-    }
 
 });
 
