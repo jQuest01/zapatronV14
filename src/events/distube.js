@@ -142,6 +142,9 @@ async function triviaControl(queue) {
                     const tPlayer = getTriviaPlayer(acertou)
                     atualizaTriviaPlayer(acertou, tPlayer.points + 1)
                 } else {
+                    if (acertou !== msg.author.id) {
+                        acertou = msg.author.id
+                    }
                     const tPlayer = getTriviaPlayer(acertou)
                     atualizaTriviaPlayer(acertou, tPlayer.points + 2)
                 }
@@ -156,6 +159,9 @@ async function triviaControl(queue) {
                     const tPlayer = getTriviaPlayer(acertou)
                     atualizaTriviaPlayer(acertou, tPlayer.points + 1)
                 } else {
+                    if (acertou !== msg.author.id) {
+                        acertou = msg.author.id
+                    }
                     const tPlayer = getTriviaPlayer(acertou)
                     atualizaTriviaPlayer(acertou, tPlayer.points + 2)
                 }
