@@ -296,7 +296,7 @@ distube.on('finish', (queue) => {
                     const queue2 = distube.getQueue('703253020716171365')
                     if (!queue2 || !queue2.playing()) {
                         const bot = client.guilds.cache.get('703253020716171365').members.cache.get('880450004123258990')
-                        bot.setChannel(null)
+                        bot.voice.setChannel(null)
                     }
                 } catch (error) {
                     console.log(new Date().toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" }), error)
