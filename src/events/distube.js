@@ -295,7 +295,7 @@ distube.on('finish', (queue) => {
                 try {
                     const queue2 = distube.getQueue('703253020716171365')
                     if (!queue2 || !queue2.playing()) {
-                        const bot = client.guilds.cache.get().members.cache.get('880450004123258990')
+                        const bot = client.guilds.cache.get('703253020716171365').members.cache.get('880450004123258990')
                         bot.setChannel(null)
                     }
                 } catch (error) {
