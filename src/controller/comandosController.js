@@ -174,60 +174,42 @@ module.exports = {
             var search = message.content.slice(comando.length + 2)
         }
 
-        if (search.includes('http') || search.includes('www')) {
-            search = search.split(',')
-
-            const playlist = await distube.createCustomPlaylist(search, {
-                member: message.member,
-                properties: { name: "Quiz de música", source: "custom" },
-                parallel: true
-            });
-
-            try {
-                distube.play(message.member.voice.channel, playlist, {
-                    textChannel: message.channel,
-                    member: message.member
-                });
-            } catch (error) {
-                console.log(error, ' Será feito uma nova tentativa')
-                try {
-                    await distube.play(message.member.voice.channel, playlist, {
-                        textChannel: client.channels.cache.get('720766817588478054'),
-                        member: message.member,
-                    });
-                } catch (error) {
-                    console.log(error)
-                    return new EmbedBuilder().setTitle('Erro').setDescription('Erro ao incluir música/playlist\nTalvez o vídeo seja permitido apenas para maiores de idade').setColor("#FF0000")
-                }
+        search = search.split(',')
+        const musicas = []
+        for (const song of search) {
+            if (song.includes('http') || song.includes('www')) {
+                musicas.push(song)
+            } else {
+                await distube.search(song, {
+                    limit: 1,
+                    safeSearch: false
+                }).then(async (result) => {
+                    musicas.push(result[0].url)
+                })
             }
         }
+        const playlist = await distube.createCustomPlaylist(musicas, {
+            member: message.member,
+            properties: { name: "Playlist", source: "custom" },
+            parallel: true
+        });
 
-        search = search.split(',')
-        for (const song of search) {
-            await distube.search(song, {
-                limit: 1,
-                safeSearch: false
-            }).then(async (result) => {
-                try {
-                    distube.play(message.member.voice.channel, result[0].url, {
-                        textChannel: message.channel,
-                        member: message.member
-                    });
-                    await sleep(2000)
-                } catch (error) {
-                    console.log(error, 'Será feito uma nova tentativa')
-                    try {
-                        distube.play(message.member.voice.channel, result[0].url, {
-                            textChannel: client.channels.cache.get('720766817588478054'),
-                            member: message.member,
-                        });
-                        await sleep(2000)
-                    } catch (error) {
-                        console.log(error)
-                        return new EmbedBuilder().setTitle('Erro').setDescription('Erro ao incluir música/playlist\nTalvez o vídeo seja permitido apenas para maiores de idade').setColor("#FF0000")
-                    }
-                }
-            })
+        try {
+            await distube.play(message.member.voice.channel, playlist, {
+                textChannel: message.channel,
+                member: message.member
+            });
+        } catch (error) {
+            console.log(error, ' Será feito uma nova tentativa')
+            try {
+                await distube.play(message.member.voice.channel, playlist, {
+                    textChannel: client.channels.cache.get('720766817588478054'),
+                    member: message.member,
+                });
+            } catch (error) {
+                console.log(error)
+                return new EmbedBuilder().setTitle('Erro').setDescription('Erro ao incluir música ').setColor("#FF0000")
+            }
         }
     },
 
