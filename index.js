@@ -3,9 +3,12 @@ const { Client, GatewayIntentBits, Collection, Interaction, EmbedBuilder } = req
 
 const { DisTube } = require('distube');
 const { SoundCloudPlugin } = require('@distube/soundcloud');
-const { SpotifyPlugin } = require('@distube/spotify');
 
 const CryptoJS = require("crypto-js");
+const key = "12345";
+const decryptedTkn = CryptoJS.AES.decrypt(process.env.DISCORD_BOT_TOKEN, key)
+
+const token = decryptedTkn.toString(CryptoJS.enc.Utf8);
 
 global.client = new Client({
     intents: [GatewayIntentBits.Guilds,
@@ -23,15 +26,10 @@ global.distube = new DisTube(client, {
     leaveOnFinish: false,
     nsfw: true,
     leaveOnStop: true,
-    plugins: [new SoundCloudPlugin(), new SpotifyPlugin()]
+    plugins: [new SoundCloudPlugin()]
 })
 
 global.jsonServer = 'https://zapas.discloud.app'
-
-const key = "12345";
-const decrypted = CryptoJS.AES.decrypt(process.env.DISCORD_BOT_TOKEN, key)
-
-const token = decrypted.toString(CryptoJS.enc.Utf8);
 
 client.on('messageCreate', async (message) => {
     if (message.author.bot) {
@@ -39,19 +37,22 @@ client.on('messageCreate', async (message) => {
     }
     if (message.content.startsWith('-')) {
         let comando = message.content.substring(1).split(/ +/)[0]
-        if ((comando === 'quiz' && message.channelId === '1093357469079715840') || (['720766817588478054', '881559023613272064'].includes(message.channelId))) {
-            try {
-                const func = require('./src/controller/comandosController')[comando]
-                const retorno = await func(message)
-                if (retorno) {
-                    message.channel.send({ embeds: [retorno] })
-                }
-            } catch (error) {
-                console.log(error)
-                message.channel.send({ embeds: [new EmbedBuilder().setTitle('Erro').setDescription('Esse comando não existe').setColor("#FF0000")] })
-            }
+        if (message.guildId === '773910988927401994') {
+            var func = require('./src/controller/comandosController')[comando]
+        } else if ((comando === 'quiz' && message.channelId === '1093357469079715840') || (['720766817588478054', '881559023613272064'].includes(message.channelId))) {
+            var func = require('./src/controller/comandosController')[comando]
         } else {
             message.channel.send({ embeds: [new EmbedBuilder().setTitle('Erro').setDescription('Comando não permitido no canal').setColor("#FF0000")] })
+        }
+
+        try {
+            const retorno = await func(message)
+            if (retorno) {
+                message.channel.send({ embeds: [retorno] })
+            }
+        } catch (error) {
+            console.log(error)
+            message.channel.send({ embeds: [new EmbedBuilder().setTitle('Erro').setDescription('Esse comando não existe').setColor("#FF0000")] })
         }
     }
 })

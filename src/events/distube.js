@@ -293,9 +293,18 @@ distube.on('finish', (queue) => {
         }).then(msg => {
             setTimeout(() => {
                 try {
+                    let quitar = false
+                    let channel = ''
                     const queue2 = distube.getQueue('703253020716171365')
-                    if (!queue2 || !queue2.playing()) {
-                        const bot = client.guilds.cache.get('703253020716171365').members.cache.get('880450004123258990')
+                    
+                    if(!queue2) {
+                        const queue3 = distube.getQueue('773910988927401994')
+                        if(!queue3 || !queue3.playing()) quitar = true; channel = '773910988927401994'
+                    }
+                    if (!quitar && !queue2.playing()) quitar = true; channel = '703253020716171365'
+
+                    if(quitar){
+                        const bot = client.guilds.cache.get(channel).members.cache.get('880450004123258990')
                         bot.voice.setChannel(null)
                     }
                 } catch (error) {

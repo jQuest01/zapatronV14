@@ -27,6 +27,16 @@ function TriviaPlayer(nickname, id, disc) {
     this.points = 0
 }
 
+async function getTitleSpotify(page) {
+    const body = await axios.get(page).then((response) => response.data)
+
+    const preTitle = body.split('<title>')[1].split('</title>')[0]
+    const song = preTitle.split('-')[0]
+    const singer = preTitle.split('by')[1].split('|')[0]
+
+    return (song + "-" + singer)
+}
+
 const jobToken = new CronJob('0 * * * *', async function () {
     console.log('Atualizando token')
     let config = JSON.parse(fs.readFileSync('./src/resources/config.json'))
@@ -131,6 +141,10 @@ module.exports = {
             var search = message.content.slice(comando.length + 2)
         }
 
+        if(search.includes('spotify')){
+            search = await getTitleSpotify(search)
+        }
+        
         try {
             distube.play(message.member.voice.channel, search, {
                 textChannel: message.channel,
