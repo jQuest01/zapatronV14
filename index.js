@@ -5,10 +5,11 @@ const { DisTube } = require('distube');
 const { SoundCloudPlugin } = require('@distube/soundcloud');
 
 const CryptoJS = require("crypto-js");
+const { CronJob } = require('cron')
 const key = "12345";
 const decryptedTkn = CryptoJS.AES.decrypt(process.env.DISCORD_BOT_TOKEN, key)
 
-const token = decryptedTkn.toString(CryptoJS.enc.Utf8);
+const dToken = decryptedTkn.toString(CryptoJS.enc.Utf8);
 
 global.client = new Client({
     intents: [GatewayIntentBits.Guilds,
@@ -29,7 +30,13 @@ global.distube = new DisTube(client, {
     plugins: [new SoundCloudPlugin()]
 })
 
+global.token = ''
 global.jsonServer = 'https://zapas.discloud.app'
+
+const jobToken = new CronJob('0 * * * *', async function () {
+    const update = require('./src/controller/comandosController')['updateToken']
+    update(null)
+}, null, true, "America/Sao_Paulo");
 
 client.on('messageCreate', async (message) => {
     if (message.author.bot) {
@@ -59,6 +66,8 @@ client.on('messageCreate', async (message) => {
 
 client.on('ready', async () => {
     console.log('Subiu', new Date().toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" }))
+    const update = require('./src/controller/comandosController')['updateToken']
+    update(null)
 })
 
 global.isTriviaOn = false
@@ -67,4 +76,4 @@ global.playerTrivia = []
 require('./src/events/distube')
 require('./src/events/loader')
 
-client.login(token)
+client.login(dToken)

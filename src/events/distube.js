@@ -1,9 +1,6 @@
 const { EmbedBuilder } = require('discord.js')
 const { normalizeValue, atualizaTriviaPlayer, getTriviaPlayer, capitalizeWords, getLeaderBoard } = require('../trivia/triviaUtils')
 const axios = require('axios');
-const CryptoJS = require("crypto-js");
-const fs = require('fs')
-const key = "12345";
 
 // const { DisTube } = require('distube');
 // const distube = new DisTube()
@@ -75,9 +72,8 @@ async function triviaControl(queue) {
     let songNameFound = false;
     let songSingerFound = false;
 
-    let config = JSON.parse(fs.readFileSync('./src/resources/config.json'))
     const header = {
-        'Authorization': CryptoJS.AES.decrypt(config.token, key).toString(CryptoJS.enc.Utf8)
+        'Authorization': token
     }
 
     const songFiltrado = await axios.get(`${jsonServer}/musicas`, { headers: header, params: { url: song } }).then((res) => res.data[0])

@@ -1,8 +1,5 @@
 const { ApplicationCommandOptionType } = require('discord.js');
 const axios = require('axios')
-const CryptoJS = require("crypto-js");
-const fs = require('fs')
-const key = "12345";
 
 module.exports = {
     name: 'addsong',
@@ -28,10 +25,8 @@ module.exports = {
     ],
 
     async execute({ inter }) {
-
-        let config = JSON.parse(fs.readFileSync('./src/resources/config.json'))
         const header = {
-            'Authorization': CryptoJS.AES.decrypt(config.token, key).toString(CryptoJS.enc.Utf8)
+            'Authorization': token
         }
 
         await inter.deferReply({ ephemeral: true });
@@ -67,7 +62,7 @@ module.exports = {
                 `${jsonServer}/musicas`, JSON.stringify(musica),
                 {
                     headers: {
-                        'Authorization': CryptoJS.AES.decrypt(config.token, key).toString(CryptoJS.enc.Utf8),
+                        'Authorization': token,
                         'Content-type': 'application/json'
                     }
                 }

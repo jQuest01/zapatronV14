@@ -1,6 +1,5 @@
 const { EmbedBuilder, ButtonBuilder, ButtonStyle } = require('discord.js')
 const { getRandom } = require('../trivia/triviaUtils')
-const { CronJob } = require('cron')
 const CryptoJS = require("crypto-js");
 const fs = require('fs')
 const axios = require('axios')
@@ -37,20 +36,18 @@ async function getTitleSpotify(page) {
     return (song + "-" + singer)
 }
 
-const jobToken = new CronJob('0 * * * *', async function () {
-    console.log('Atualizando token')
-    let config = JSON.parse(fs.readFileSync('./src/resources/config.json'))
-    const token = await axios.post(`${jsonServer}/api/auth/token`, {
-        email: CryptoJS.AES.decrypt(config.email, key).toString(CryptoJS.enc.Utf8),
-        password: CryptoJS.AES.decrypt(config.pass, key).toString(CryptoJS.enc.Utf8)
-    }).then((response) => response.data.token)
-
-    config.token = CryptoJS.AES.encrypt(token, key).toString()
-    fs.writeFileSync('./src/resources/config.json', JSON.stringify(config))
-    console.log('Token atualizado com sucesso')
-}, null, true, "America/Sao_Paulo");
-
 module.exports = {
+    async updateToken(message) {
+        console.log('Atualizando token')
+        let config = JSON.parse(fs.readFileSync('./src/resources/config.json'))
+        token = await axios.post(`${jsonServer}/api/auth/token`, {
+            email: CryptoJS.AES.decrypt(config.email, key).toString(CryptoJS.enc.Utf8),
+            password: CryptoJS.AES.decrypt(config.pass, key).toString(CryptoJS.enc.Utf8)
+        }).then((response) => response.data.token)
+
+        console.log('Token atualizado com sucesso')
+    },
+
     async quiz(message) {
         try {
             if (!message.member.voice.channelId) {
@@ -69,9 +66,8 @@ module.exports = {
                 return null
             }
 
-            let config = JSON.parse(fs.readFileSync('./src/resources/config.json'))
             const header = {
-                'Authorization': CryptoJS.AES.decrypt(config.token, key).toString(CryptoJS.enc.Utf8)
+                'Authorization': token
             }
 
             const jsonSongs = await axios.get(`${jsonServer}/musicas`, {
@@ -141,10 +137,10 @@ module.exports = {
             var search = message.content.slice(comando.length + 2)
         }
 
-        if(search.includes('spotify')){
+        if (search.includes('spotify')) {
             search = await getTitleSpotify(search)
         }
-        
+
         try {
             distube.play(message.member.voice.channel, search, {
                 textChannel: message.channel,
