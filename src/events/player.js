@@ -72,7 +72,7 @@ async function triviaControl(queue) {
     let songNameFound = false;
     let songSingerFound = false;
 
-    const songFiltrado = await axios.get(`${jsonServer}/musicas`, { params: { url: song } }).then((res) => res.data[0])
+    const songFiltrado = await axios.get(`${jsonServer}/api/musica`, { params: { url: song } }).then((res) => res.data[0])
 
     let nameAnswer = ''
     let singersAnswer = []
@@ -164,7 +164,7 @@ async function triviaControl(queue) {
             let nameAnswer = ''
             let singersAnswer = []
 
-            musica = await axios.get(`${jsonServer}/musicas`, { params: { url: musica } }).then((res) => res.data[0])
+            musica = await axios.get(`${jsonServer}/api/musica`, { params: { url: musica } }).then((res) => res.data[0])
             nameAnswer = musica.title.toLowerCase()
             singersAnswer = musica.singers
 

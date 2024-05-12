@@ -70,7 +70,7 @@ module.exports = {
                 'Authorization': token
             }
 
-            const jsonSongs = await axios.get(`${jsonServer}/musicas`, {
+            const jsonSongs = await axios.get(`${jsonServer}/api/musica`, {
                 headers: header
             }).then((res) => res.data)
 

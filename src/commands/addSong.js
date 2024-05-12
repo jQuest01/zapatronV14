@@ -49,7 +49,7 @@ module.exports = {
             "singers": singer
         }
 
-        const jsonSongs = await axios.get(`${jsonServer}/musicas`, { headers: header }).then((res) => res.data)
+        const jsonSongs = await axios.get(`${jsonServer}/api/musica`, { headers: header }).then((res) => res.data)
 
         const result = jsonSongs.filter((s) => {
             return (s.url === link || (s.title.toLowerCase() === song.toLowerCase() && s.singers.some(r => singer.includes(r.toLowerCase()))))
@@ -59,14 +59,16 @@ module.exports = {
             await inter.editReply({ content: 'Adicionando sua música... 🎧' });
 
             const response = await axios.post(
-                `${jsonServer}/musicas`, JSON.stringify(musica),
+                `${jsonServer}/api/musica`, JSON.stringify(musica),
                 {
                     headers: {
                         'Authorization': token,
                         'Content-type': 'application/json'
                     }
                 }
-            )
+            ).catch(async (err) => {
+                return await inter.editReply({ content: 'Sua música já está na lista' });
+            })
 
             return await inter.editReply({ content: 'Música adicionada com sucesso' });
         }
