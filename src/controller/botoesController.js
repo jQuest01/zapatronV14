@@ -11,6 +11,7 @@ module.exports = {
         let row = new ActionRowBuilder()
         if (interaction) {
             try {
+                console.log(interaction.customId)
                 const opt = comandosController[interaction.customId]
                 opt(interaction)
             } catch (error) {
