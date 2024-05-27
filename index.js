@@ -31,6 +31,8 @@ global.distube = new DisTube(client, {
 })
 
 global.token = ''
+global.repeat = 0
+global.volume = null
 global.jsonServer = 'https://zapas.discloud.app'
 
 const jobToken = new CronJob('0 * * * *', async function () {

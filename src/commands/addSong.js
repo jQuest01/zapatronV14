@@ -4,7 +4,7 @@ const axios = require('axios')
 module.exports = {
     name: 'addsong',
     description: "Adiciona uma música na lista do trivia",
-    voiceChannel: true,
+    voiceChannel: false,
     options: [
         {
             name: 'nome',

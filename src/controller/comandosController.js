@@ -5,6 +5,28 @@ const fs = require('fs')
 const axios = require('axios')
 const key = "12345";
 
+const getLetra = (title) =>
+    new Promise(async (res, rej) => {
+        const url = new URL("https://some-random-api.ml/lyrics");
+        url.searchParams.append("title", title);
+
+        try {
+            const { data } = await axios.get(url.href);
+            res(data);
+        } catch (error) {
+            rej(error);
+        }
+    });
+
+const cortaNome = (length, value) => {
+    const replaced = value.replace(/\n/g, "--");
+    const regex = `.{1,${length}}`;
+    const lines = replaced
+        .match(new RegExp(regex, "g"))
+        .map((line) => line.replace(/--/g, "\n"));
+    return lines;
+};
+
 inverteArray = (array) => {
     let newArray = []
 
@@ -158,6 +180,11 @@ module.exports = {
                 return new EmbedBuilder().setTitle('Erro').setDescription('Erro ao incluir música/playlist\nTalvez o vídeo seja permitido apenas para maiores de idade').setColor("#FF0000")
             }
         }
+        if (volume) {
+            const queue = distube.getQueue(message.guildId)
+            volume = queue.volume
+        }
+
     },
 
     async p(message) {
@@ -470,6 +497,57 @@ module.exports = {
 
     },
 
+    async mute(message) {
+        let queue = distube.getQueue(message.guildId)
+
+        if (!queue || !queue.songs || isTriviaOn) {
+            return
+        }
+
+        queue.setVolume(0)
+    },
+
+    async unmute(message) {
+        let queue = distube.getQueue(message.guildId)
+
+        if (!queue || !queue.songs || isTriviaOn) {
+            return
+        }
+
+        queue.setVolume(volume)
+    },
+
+    async mais(message) {
+        let queue = distube.getQueue(message.guildId)
+
+        if (!queue || !queue.songs || isTriviaOn) {
+            return
+        }
+
+        queue.setVolume(volume + 10)
+        volume = volume + 10
+    },
+
+    async menos(message) {
+        let queue = distube.getQueue(message.guildId)
+
+        if (!queue || !queue.songs || isTriviaOn) {
+            return
+        }
+
+        queue.setVolume(volume - 10)
+        volume = volume - 10
+    },
+
+    async loopBtn(message) {
+        repeat = repeat > 1 ? 0 : repeat + 1
+        distube.setRepeatMode(message, repeat);
+    },
+
+    async shuffle(message) {
+        await distube.shuffle(message);
+    },
+
     async pula(message) {
         let queue = distube.getQueue(message.guildId)
 
@@ -503,6 +581,63 @@ module.exports = {
             await inter.editReply({ content: `Pulado com sucesso.` });
         }
 
-    }
+    },
+    async letra(message) {
+        const queue = distube.getQueue(message.guildId)
+        const index = message.content.indexOf(" ");
+        var title = ''
+        if (index !== -1) {
+            title = message.content.slice(index + 1)
+        } else if (queue) {
+            title = queue.songs[0].name
+        } else {
+            // return 
+            return message.channel.send({
+                embeds: [new EmbedBuilder()
+                    .setTitle('Erro')
+                    .setDescription('')
+                    .setColor("#FF0000")]
+            });
+        }
+
+        if (title.includes('[Official Music Video]') || title.includes('(Official Music Video)')) {
+            var indexT = title.includes('[Official Music Video]') ? title.indexOf('[Official Music Video]') : title.indexOf('(Official Music Video)')
+            title = title.slice(0, indexT) + title.slice(indexT + 22, title.length)
+        }
+
+        try {
+            const data = await getLetra(title);
+            var embed = cortaNome(4096, data.lyrics)
+            embed = embed[0].split('\n')
+
+            var letra = ''
+            pos = 0
+            for (nome of embed) {
+                letra += nome + '\n'
+                pos++
+                if (pos === 4) {
+                    pos = 0
+                    letra += '\n'
+                }
+            }
+            return message.channel.send({
+                embeds: [new EmbedBuilder()
+                    .setTitle(`${data.title} - ${data.author}`)
+                    .setDescription(letra)
+                    .setImage(data.thumbnail.genius)
+                    .setColor(config.cores.azul)
+                ]
+            });
+        } catch (err) {
+            console.log(new Date(), err)
+            message.channel.send({
+                embeds: [new EmbedBuilder().setTitle("")
+                    .setDescription("Não encontrei a letra dessa música")
+                    .setColor(config.cores.vermelho)
+                ]
+            })
+        }
+
+    },
 
 }
