@@ -31,34 +31,12 @@ module.exports = async (client, inter) => {
             .setTitle("Configurações")
             .setColor("#2f3136")
 
-        if (inter.customId == 'btnDescartar') {
-            embed.setDescription("Todas as alterações foram descartadas!")
-            await inter.deferUpdate()
-            inter.editReply({ embeds: [embed], components: [], ephemeral: true })
-            setTimeout(async function () {
-                //preciso bolar a ideia pra apagar essa porra
-            }, 5000)
+        embed.setDescription("Cuidado onde vai mexer ai o saco de vacilo, essas merda ai que me faz funcionar direito")
+        console.log('botão = ' + inter.customId)
+        await inter.deferUpdate()
+        let rows = montaBotoesConfig(inter)
+        await inter.editReply({ embeds: [embed], components: rows, ephemeral: true })
 
-        } else if (inter.customId == 'btnSalvarCont') {
-            embed.setDescription("Cuidado onde vai mexer ai o saco de vacilo, essas merda ai que me faz funcionar direito")
-            await inter.deferUpdate()
-            let rows = montaBotoesConfig(null)
-            inter.editReply({ embeds: [embed], components: rows, ephemeral: true })
-            salvaConfiguracoes()
-        } else if (inter.customId == 'btnSalvarSair') {
-            embed.setDescription("Todas as alterações foram salvas!")
-            await inter.deferUpdate()
-            inter.editReply({ embeds: [embed], components: [], ephemeral: true })
-            setTimeout(async function () {
-                //preciso bolar a ideia pra apagar essa porra
-            }, 5000)
-            salvaConfiguracoes()
-        } else {
-            embed.setDescription("Cuidado onde vai mexer ai o saco de vacilo, essas merda ai que me faz funcionar direito")
-            await inter.deferUpdate()
-            let rows = montaBotoesConfig(inter)
-            await inter.editReply({ embeds: [embed], components: rows, ephemeral: true })
-        }
     }
 
 };
