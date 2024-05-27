@@ -1,5 +1,4 @@
 const { ActionRowBuilder, ButtonBuilder, ButtonStyle, StringSelectMenuBuilder } = require('discord.js')
-const comandosController = require('./comandosController')
 // const { epic, prime, updateConfig, updateSteam } = require('./controllerExternos')
 
 // let idsArray = new HashMap()
@@ -7,17 +6,7 @@ const comandosController = require('./comandosController')
 module.exports = {
 
     montaBotoesConfig(interaction) {
-
         let row = new ActionRowBuilder()
-        if (interaction) {
-            try {
-                console.log(interaction.customId)
-                const opt = comandosController[interaction.customId]
-                opt(interaction)
-            } catch (error) {
-                console.log(error)
-            }
-        }
 
         return telaInicial(row, interaction)
     },
@@ -26,14 +15,16 @@ module.exports = {
 }
 
 function telaInicial(row, interaction) {
+    if (!interaction) return []
     let rows = []
-    const queue = distube.getQueue(interaction.guildId)
+    const queue = interaction.guildId ? distube.getQueue(interaction.guildId) : interaction
 
     row.addComponents(
         new ButtonBuilder()
             .setCustomId('volta')
             .setStyle(ButtonStyle.Secondary)
-            .setEmoji('<:skipback:1243671127356604541>'),
+            .setEmoji('<:skipback:1243671127356604541>')
+            .setDisabled(queue.previousSongs.length <= 0),
 
         queue.playing ?
             new ButtonBuilder()
@@ -49,11 +40,12 @@ function telaInicial(row, interaction) {
             .setCustomId('next')
             .setStyle(ButtonStyle.Secondary)
             .setEmoji('<:skipforward:1243671128732336189>')
-            .setDisabled(queue.songs.length === 0),
+            .setDisabled(queue.songs.length <= 1),
         new ButtonBuilder()
             .setCustomId('letra')
             .setStyle(ButtonStyle.Secondary)
             .setLabel('Lyrics')
+            .setDisabled(true)
     )
 
     rows.push(row)
@@ -62,7 +54,8 @@ function telaInicial(row, interaction) {
         new ButtonBuilder()
             .setCustomId('menos')
             .setStyle(ButtonStyle.Primary)
-            .setEmoji('<:volume1:1243671133040017539>'),
+            .setEmoji('<:volume1:1243671133040017539>')
+            .setDisabled(volume === 0),
         queue.volume ?
             new ButtonBuilder()
                 .setCustomId('mute')
@@ -77,7 +70,9 @@ function telaInicial(row, interaction) {
         new ButtonBuilder()
             .setCustomId('mais')
             .setStyle(ButtonStyle.Primary)
-            .setEmoji('<:volume2:1243671134646571080>'),
+            .setEmoji('<:volume2:1243671134646571080>')
+            .setDisabled(volume === 100),
+
         new ButtonBuilder()
             .setCustomId('volume')
             .setDisabled(true)
@@ -113,14 +108,14 @@ function telaInicial(row, interaction) {
 }
 
 const validaRepeat = (repeat) => {
-    switch(repeat){
-        case(0):{
+    switch (repeat) {
+        case (0): {
             return 'Repetição desativada'
         }
-        case(1): {
+        case (1): {
             return 'Repetindo lista'
         }
-        case(2): {
+        case (2): {
             return 'Repetindo música'
         }
     }

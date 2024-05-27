@@ -1,5 +1,6 @@
 const { EmbedBuilder } = require('discord.js')
 const { normalizeValue, atualizaTriviaPlayer, getTriviaPlayer, capitalizeWords, getLeaderBoard } = require('../trivia/triviaUtils')
+const { montaBotoesConfig } = require('../controller/botoesController')
 const axios = require('axios');
 
 // const { DisTube } = require('distube');
@@ -22,15 +23,13 @@ distube.on('playSong', async (queue, track) => {
                     text: `Adicionado por ${track.member.displayName ? track.member.displayName : track.member.username}`,
                     iconURL: track.user.avatarURL()
                 })
-            queue.textChannel.send({ embeds: [embed] }).then(msg => {
-                setTimeout(() => {
-                    try {
-                        msg.delete()
-                    } catch (error) {
-                        console.log(new Date().toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" }), error)
-                    }
-                }, track.duration * 1000)
-            })
+            if (msgId === '') {
+                queue.textChannel.send({ embeds: [embed], components: montaBotoesConfig(queue) }).then(msg => {
+                    msgId = msgId === '' ? msg.id : msgId
+                })
+            } else {
+                client.channels.cache.get(queue.textChannel.id).messages.edit(msgId, { components: montaBotoesConfig(queue), embeds: [embed] })
+            }
         } catch (error) {
             console.log(new Date().toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" }), error)
         }
@@ -251,6 +250,20 @@ distube.on('addSong', (queue, track) => {
                     }
                 }, 10000)
             }).catch(err => console.log(new Date().toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" }), err))
+
+            if (msgId !== '') {
+                const embed = new EmbedBuilder()
+                .setTitle('A música que tá tocando é essa: ')
+                .setDescription(`\n[${queue.songs[0].name}](${queue.songs[0].url})`)
+                .setImage(queue.songs[0].thumbnail)
+                .setColor("0099ff")
+                .setFooter({
+                    text: `Adicionado por ${queue.songs[0].member.displayName ? queue.songs[0].member.displayName : queue.songs[0].member.username}`,
+                    iconURL: queue.songs[0].user.avatarURL()
+                })
+                client.channels.cache.get(queue.textChannel.id).messages.edit(msgId, { components: montaBotoesConfig(queue), embeds: [embed] })
+            }
+
         }
     }
 });
@@ -258,6 +271,7 @@ distube.on('addSong', (queue, track) => {
 distube.on('disconnect', (queue) => {
     console.log('trigger disconnect')
     isTriviaOn = false
+    msgId = ''
     queue.textChannel.send({
         embeds: [new EmbedBuilder()
             .setTitle("**Desconectado**")
@@ -269,6 +283,7 @@ distube.on('disconnect', (queue) => {
 distube.on('empty', async (queue) => {
     console.log('trigger empty')
     isTriviaOn = false
+    msgId = ''
     await queue.textChannel.send({
         embeds: [new EmbedBuilder()
             .setTitle("**#Abandonado**")
@@ -280,7 +295,9 @@ distube.on('empty', async (queue) => {
 
 distube.on('finish', (queue) => {
     console.log('trigger finish')
+    msgId = ''
     if (!isTriviaOn) {
+        client.channels.cache.get(queue.textChannel.id).messages.delete(msgId)
         queue.textChannel.send({
             embeds: [new EmbedBuilder()
                 .setTitle("**Finalizou**")
@@ -292,14 +309,14 @@ distube.on('finish', (queue) => {
                     let quitar = false
                     let channel = ''
                     const queue2 = distube.getQueue('703253020716171365')
-                    
-                    if(!queue2) {
+
+                    if (!queue2) {
                         const queue3 = distube.getQueue('773910988927401994')
-                        if(!queue3 || !queue3.playing()) quitar = true; channel = '773910988927401994'
+                        if (!queue3 || !queue3.playing()) quitar = true; channel = '773910988927401994'
                     }
                     if (!quitar && !queue2.playing()) quitar = true; channel = '703253020716171365'
 
-                    if(quitar){
+                    if (quitar) {
                         const bot = client.guilds.cache.get(channel).members.cache.get('880450004123258990')
                         bot.voice.setChannel(null)
                     }

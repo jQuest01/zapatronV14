@@ -7,11 +7,10 @@ const key = "12345";
 
 const getLetra = (title) =>
     new Promise(async (res, rej) => {
-        const url = new URL("https://some-random-api.ml/lyrics");
-        url.searchParams.append("title", title);
+        const url = `https://some-random-api.ml/lyrics?title=${title}`
 
         try {
-            const { data } = await axios.get(url.href);
+            const { data } = await axios.get(url);
             res(data);
         } catch (error) {
             rej(error);
@@ -179,10 +178,6 @@ module.exports = {
                 console.log(error)
                 return new EmbedBuilder().setTitle('Erro').setDescription('Erro ao incluir música/playlist\nTalvez o vídeo seja permitido apenas para maiores de idade').setColor("#FF0000")
             }
-        }
-        if (volume) {
-            const queue = distube.getQueue(message.guildId)
-            volume = queue.volume
         }
 
     },
@@ -545,7 +540,13 @@ module.exports = {
     },
 
     async shuffle(message) {
-        await distube.shuffle(message);
+        let queue = distube.getQueue(message.guildId)
+
+        if (!queue || !queue.songs || isTriviaOn) {
+            return
+        }
+
+        await queue.shuffle();
     },
 
     async pula(message) {
@@ -584,7 +585,11 @@ module.exports = {
     },
     async letra(message) {
         const queue = distube.getQueue(message.guildId)
-        const index = message.content.indexOf(" ");
+        try {
+            var index = message.content.indexOf(" ");
+        } catch (error) {
+            index = -1
+        }
         var title = ''
         if (index !== -1) {
             title = message.content.slice(index + 1)
@@ -603,6 +608,10 @@ module.exports = {
         if (title.includes('[Official Music Video]') || title.includes('(Official Music Video)')) {
             var indexT = title.includes('[Official Music Video]') ? title.indexOf('[Official Music Video]') : title.indexOf('(Official Music Video)')
             title = title.slice(0, indexT) + title.slice(indexT + 22, title.length)
+        }
+
+        if (title.includes('[')) {
+            title = title.slice(0, title.indexOf('[')) + title.slice(title.indexOf(']') + 1, title.length)
         }
 
         try {

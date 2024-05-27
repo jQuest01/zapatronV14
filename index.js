@@ -1,8 +1,9 @@
 require('dotenv').config()
 const { Client, GatewayIntentBits, Collection, Interaction, EmbedBuilder } = require("discord.js")
- 
+
 const { DisTube } = require('distube');
 const { SoundCloudPlugin } = require('@distube/soundcloud');
+// const ffmpeg = require('ffmpeg-static')
 
 const CryptoJS = require("crypto-js");
 const { CronJob } = require('cron')
@@ -27,15 +28,17 @@ global.distube = new DisTube(client, {
     leaveOnFinish: false,
     nsfw: true,
     leaveOnStop: true,
+    // ffmpeg: { path: ffmpeg },
     plugins: [new SoundCloudPlugin()]
 })
 
 global.token = ''
 global.repeat = 0
-global.volume = null
+global.volume = 50
+global.msgId = ''
 global.jsonServer = 'https://zapas.discloud.app'
 
-const jobToken = new CronJob('0 * * * *', async function () {
+const jobToken = new CronJob('*/30 * * * *', async function () {
     const update = require('./src/controller/comandosController')['updateToken']
     update(null)
 }, null, true, "America/Sao_Paulo");
