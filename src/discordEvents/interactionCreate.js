@@ -56,7 +56,7 @@ module.exports = async (client, inter) => {
         } else {
             embed.setDescription("Cuidado onde vai mexer ai o saco de vacilo, essas merda ai que me faz funcionar direito")
             await inter.deferUpdate()
-            let rows = montaBotoesConfig(interaction)
+            let rows = montaBotoesConfig(inter)
             inter.editReply({ embeds: [embed], components: rows, ephemeral: true })
         }
     }
