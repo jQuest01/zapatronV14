@@ -12,7 +12,7 @@ module.exports = {
             .setColor("#2f3136")
             .setDescription("Cuidado onde vai mexer ai o saco de vacilo, essas merda ai que me faz funcionar direito")
 
-        let rows = montaBotoesConfig(undefined, client)
+        let rows = montaBotoesConfig(inter)
 
         inter.reply({
             embeds: [embed],

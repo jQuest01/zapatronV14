@@ -17,7 +17,6 @@ module.exports = async (client, inter) => {
                 ephemeral: true
             })
         }
-        console.log(inter)
         command.execute({ inter, client });
     } else if (inter.type === InteractionType.ModalSubmit) {
         const command = client.commands.get(inter.message.interaction.commandName)
@@ -43,7 +42,7 @@ module.exports = async (client, inter) => {
         } else if (inter.customId == 'btnSalvarCont') {
             embed.setDescription("Cuidado onde vai mexer ai o saco de vacilo, essas merda ai que me faz funcionar direito")
             await inter.deferUpdate()
-            let rows = montaBotoesConfig(undefined, client)
+            let rows = montaBotoesConfig(undefined)
             inter.editReply({ embeds: [embed], components: rows, ephemeral: true })
             salvaConfiguracoes()
         } else if (inter.customId == 'btnSalvarSair') {
@@ -57,14 +56,9 @@ module.exports = async (client, inter) => {
         } else {
             embed.setDescription("Cuidado onde vai mexer ai o saco de vacilo, essas merda ai que me faz funcionar direito")
             await inter.deferUpdate()
-            let rows = montaBotoesConfig(interaction, client)
+            let rows = montaBotoesConfig(interaction)
             inter.editReply({ embeds: [embed], components: rows, ephemeral: true })
         }
-
-    }
-    if (inter.isStringSelectMenu()) {
-        inter.deferUpdate()
-        controleMenuSelector(interaction)
     }
 
 };
