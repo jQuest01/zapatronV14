@@ -42,7 +42,7 @@ module.exports = async (client, inter) => {
         } else if (inter.customId == 'btnSalvarCont') {
             embed.setDescription("Cuidado onde vai mexer ai o saco de vacilo, essas merda ai que me faz funcionar direito")
             await inter.deferUpdate()
-            let rows = montaBotoesConfig(undefined)
+            let rows = montaBotoesConfig(null)
             inter.editReply({ embeds: [embed], components: rows, ephemeral: true })
             salvaConfiguracoes()
         } else if (inter.customId == 'btnSalvarSair') {
