@@ -253,14 +253,14 @@ distube.on('addSong', (queue, track) => {
 
             if (msgId !== '') {
                 const embed = new EmbedBuilder()
-                .setTitle('A música que tá tocando é essa: ')
-                .setDescription(`\n[${queue.songs[0].name}](${queue.songs[0].url})`)
-                .setImage(queue.songs[0].thumbnail)
-                .setColor("0099ff")
-                .setFooter({
-                    text: `Adicionado por ${queue.songs[0].member.displayName ? queue.songs[0].member.displayName : queue.songs[0].member.username}`,
-                    iconURL: queue.songs[0].user.avatarURL()
-                })
+                    .setTitle('A música que tá tocando é essa: ')
+                    .setDescription(`\n[${queue.songs[0].name}](${queue.songs[0].url})`)
+                    .setImage(queue.songs[0].thumbnail)
+                    .setColor("0099ff")
+                    .setFooter({
+                        text: `Adicionado por ${queue.songs[0].member.displayName ? queue.songs[0].member.displayName : queue.songs[0].member.username}`,
+                        iconURL: queue.songs[0].user.avatarURL()
+                    })
                 client.channels.cache.get(queue.textChannel.id).messages.edit(msgId, { components: montaBotoesConfig(queue), embeds: [embed] })
             }
 
@@ -271,7 +271,10 @@ distube.on('addSong', (queue, track) => {
 distube.on('disconnect', (queue) => {
     console.log('trigger disconnect')
     isTriviaOn = false
-    msgId = ''
+    if (msgId) {
+        client.channels.cache.get(queue.textChannel.id).messages.delete(msgId)
+        msgId = ''
+    }
     queue.textChannel.send({
         embeds: [new EmbedBuilder()
             .setTitle("**Desconectado**")
@@ -283,7 +286,10 @@ distube.on('disconnect', (queue) => {
 distube.on('empty', async (queue) => {
     console.log('trigger empty')
     isTriviaOn = false
-    msgId = ''
+    if (msgId) {
+        client.channels.cache.get(queue.textChannel.id).messages.delete(msgId)
+        msgId = ''
+    }
     await queue.textChannel.send({
         embeds: [new EmbedBuilder()
             .setTitle("**#Abandonado**")
@@ -295,7 +301,7 @@ distube.on('empty', async (queue) => {
 
 distube.on('finish', (queue) => {
     console.log('trigger finish')
-    msgId = ''
+
     if (!isTriviaOn) {
         client.channels.cache.get(queue.textChannel.id).messages.delete(msgId)
         queue.textChannel.send({
@@ -325,6 +331,7 @@ distube.on('finish', (queue) => {
                 }
             }, 300000)
         }).catch(err => console.log(new Date().toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" }), err))
+        msgId = ''
     }
 });
 

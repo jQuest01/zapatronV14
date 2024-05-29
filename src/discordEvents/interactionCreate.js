@@ -25,21 +25,22 @@ module.exports = async (client, inter) => {
         //     // const command = client.commands.get(inter.message.interaction.commandName)
         //     // command.execute({ inter, client })
     } else if (inter.type === InteractionType.MessageComponent) {
-        const header = {
-            'Authorization': token
-        }
-        const existe = await axios.get(`${jsonServer}/api/idempotencia`, { headers: header }).then((response) => response.data)
-        if (!existe) {
-            try {
-                await axios.post(`${jsonServer}/api/idempotencia`, { body: { servico: inter.customId } }, { headers: header }).then((response) => response.data)
-                const comandosController = require('../controller/comandosController')[inter.customId]
-                comandosController(inter)
-            } catch (error) {
-                console.log(error)
-            } finally {
-                await axios.delete(`${jsonServer}/api/idempotencia`, { headers: header })
+        if (inter.member.voice.channel) {
+            const header = {
+                'Authorization': token
             }
-
+            const existe = await axios.get(`${jsonServer}/api/idempotencia`, { headers: header }).then((response) => response.data[0])
+            if (!existe) {
+                try {
+                    await axios.post(`${jsonServer}/api/idempotencia`, { servico: inter.customId }, { headers: header }).then((response) => response.data)
+                    const comandosController = require('../controller/comandosController')[inter.customId]
+                    await comandosController(inter)
+                } catch (error) {
+                    console.log(error)
+                } finally {
+                    await axios.delete(`${jsonServer}/api/idempotencia`, { headers: header })
+                }
+            }
         }
 
         // const command = client.commands.get(inter.message.interaction ? inter.message.interaction.commandName : inter.customId)
@@ -52,20 +53,22 @@ module.exports = async (client, inter) => {
         //     .setColor("#2f3136")
 
         // embed.setDescription("Cuidado onde vai mexer ai o saco de vacilo, essas merda ai que me faz funcionar direito")
-        const queue = distube.getQueue(inter.guildId)
-
-        const embed = new EmbedBuilder()
-            .setTitle('A música que tá tocando é essa: ')
-            .setDescription(`\n[${queue.songs[0].name}](${queue.songs[0].url})`)
-            .setImage(queue.songs[0].thumbnail)
-            .setColor("0099ff")
-            .setFooter({
-                text: `Adicionado por ${queue.songs[0].member.displayName ? queue.songs[0].member.displayName : queue.songs[0].member.username}`,
-                iconURL: queue.songs[0].user.avatarURL()
-            })
         await inter.deferUpdate()
-        let rows = montaBotoesConfig(inter)
-        client.channels.cache.get(inter.channelId).messages.edit(msgId, { components: rows, embeds: [embed] })
+        if (inter.member.voice.channel) {
+            const queue = distube.getQueue(inter.guildId)
+
+            const embed = new EmbedBuilder()
+                .setTitle('A música que tá tocando é essa: ')
+                .setDescription(`\n[${queue.songs[0].name}](${queue.songs[0].url})`)
+                .setImage(queue.songs[0].thumbnail)
+                .setColor("0099ff")
+                .setFooter({
+                    text: `Adicionado por ${queue.songs[0].member.displayName ? queue.songs[0].member.displayName : queue.songs[0].member.username}`,
+                    iconURL: queue.songs[0].user.avatarURL()
+                })
+            let rows = montaBotoesConfig(inter)
+            client.channels.cache.get(inter.channelId).messages.edit(msgId, { components: rows, embeds: [embed] })
+        }
     }
 
 };
