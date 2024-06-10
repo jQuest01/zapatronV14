@@ -3,6 +3,7 @@ const { Client, GatewayIntentBits, Collection, Interaction, EmbedBuilder } = req
 
 const { DisTube } = require('distube');
 const { SoundCloudPlugin } = require('@distube/soundcloud');
+const { YouTubePlugin } = require('@distube/youtube')
 // const ffmpeg = require('ffmpeg-static')
 
 const CryptoJS = require("crypto-js");
@@ -21,16 +22,7 @@ global.client = new Client({
     GatewayIntentBits.MessageContent]
 })
 
-global.distube = new DisTube(client, {
-    searchCooldown: 30,
-    leaveOnEmpty: true,
-    emptyCooldown: 30,
-    leaveOnFinish: false,
-    nsfw: true,
-    leaveOnStop: true,
-    // ffmpeg: { path: ffmpeg },
-    plugins: [new SoundCloudPlugin()]
-})
+global.distube = null
 
 global.token = ''
 global.repeat = 0
@@ -43,9 +35,26 @@ const jobToken = new CronJob('*/30 * * * *', async function () {
     update(null)
 }, null, true, "America/Sao_Paulo");
 
+const createDistube = async () => {
+    const getCookies = require('./src/controller/comandosController')['getCookies']
+    const cookies = await getCookies(null)
+
+    return new DisTube(client, {
+        // leaveOnEmpty: true,
+        // emptyCooldown: 30,
+        // leaveOnFinish: false,
+        nsfw: true,
+        // leaveOnStop: true,
+        // ffmpeg: { path: ffmpeg },
+        plugins: [new YouTubePlugin({
+            cookies: cookies
+        }), new SoundCloudPlugin()]
+    })
+}
+
 client.on('messageCreate', async (message) => {
     if (message.author.bot) {
-        return 
+        return
     }
     if (message.content.startsWith('-')) {
         let comando = message.content.substring(1).split(/ +/)[0]
@@ -70,15 +79,15 @@ client.on('messageCreate', async (message) => {
 })
 
 client.on('ready', async () => {
-    console.log('Subiu', new Date().toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" }))
     const update = require('./src/controller/comandosController')['updateToken']
-    update(null)
+    await update(null)
+    distube = await createDistube()
+    require('./src/events/distube')
+    require('./src/events/loader')
+    console.log('Subiu', new Date().toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" }))
 })
 
 global.isTriviaOn = false
 global.playerTrivia = []
-
-require('./src/events/distube')
-require('./src/events/loader')
 
 client.login(dToken)

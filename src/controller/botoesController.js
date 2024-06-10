@@ -26,7 +26,7 @@ function telaInicial(row, interaction) {
             .setEmoji('<:skipback:1243671127356604541>')
             .setDisabled(queue.previousSongs.length <= 0),
 
-        queue.playing ?
+        !queue.paused ?
             new ButtonBuilder()
                 .setCustomId('pause')
                 .setStyle(ButtonStyle.Primary)

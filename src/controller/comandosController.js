@@ -4,6 +4,7 @@ const CryptoJS = require("crypto-js");
 const fs = require('fs')
 const axios = require('axios')
 const key = "12345";
+// const { DisTube } = require('distube');
 
 const getLetra = (title) =>
     new Promise(async (res, rej) => {
@@ -67,6 +68,21 @@ module.exports = {
         }).then((response) => response.data.token)
 
         console.log('Token atualizado com sucesso')
+    },
+
+    async getCookies(message){
+        if (message) return
+        console.log('Atualizando cookies do youtube')
+        const header = {
+            'Authorization': token
+        }
+
+        const cookies = await axios.get(`${jsonServer}/api/cookies`, {
+            headers: header
+        }).then((res) => res.data)
+
+        return cookies
+
     },
 
     async quiz(message) {
@@ -304,9 +320,12 @@ module.exports = {
     },
 
     pause(message) {
+        // const distube = new DisTube(client, {})
         const queue = distube.getQueue(message.guildId)
+        // queue.paused
+        // console.log(queue)
 
-        if (!queue || !queue.playing || isTriviaOn) {
+        if (!queue || queue.paused || isTriviaOn) {
             return
         }
 
