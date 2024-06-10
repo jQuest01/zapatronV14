@@ -75,7 +75,7 @@ module.exports = {
         console.log('Atualizando cookies do youtube')
         const header = {
             'Authorization': token
-        }
+        } 
 
         const cookies = await axios.get(`${jsonServer}/api/cookies`, {
             headers: header
