@@ -1,8 +1,9 @@
-const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, ModalBuilder, TextInputBuilder  } = require('discord.js');
+const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, ModalBuilder, TextInputBuilder, SlashCommandBuilder  } = require('discord.js');
 
 module.exports = {
-    name: 'rolardado',
-    description: "Rola o(s) dado(s) selecionado(s) e retorna o resultado",
+    data: new SlashCommandBuilder()
+        .setName('rolardado')
+        .setDescription("Rola o(s) dado(s) selecionado(s) e retorna o resultado"),
 
     async execute({ inter }) {
         

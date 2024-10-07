@@ -22,7 +22,7 @@
     "cron": "^3.1.7",
     "crypto-js": "^4.2.0",
     "discord-collector": "^1.11.18",
-    "discord.js": "^14.15.2",
+    "discord.js": "^14.16.3",
     "distube": "^5.0.1",
     "dotenv": "^16.4.5",
     "libsodium-wrappers": "^0.7.13",

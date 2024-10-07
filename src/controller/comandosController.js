@@ -464,7 +464,7 @@ module.exports = {
         }
 
         try {
-            var opt = message.options._hoistedOptions.map(x => x.value).toString()
+            var opt = message.options.getString('opcao')
         } catch (error) {
             const comando = message.content.substring(1).split(/ +/)[0]
             const index = message.content.indexOf(" ");

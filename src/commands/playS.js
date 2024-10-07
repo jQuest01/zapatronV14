@@ -1,18 +1,12 @@
-const { ApplicationCommandOptionType } = require('discord.js');
+const { ApplicationCommandOptionType, SlashCommandStringOption, SlashCommandBuilder } = require('discord.js');
 const { ps } = require('../controller/comandosController')
 
 module.exports = {
-    name: 'plays',
-    description: "Adiciona um array de músicas na playlist",
+    data: new SlashCommandBuilder()
+        .setName('plays')
+        .setDescription("Adiciona um array de músicas na playlist")
+        .addStringOption(new SlashCommandStringOption().setName('musicas').setDescription('as músicas para adicionar, separe por vírgula').setRequired(true)),
     voiceChannel: true,
-    options: [
-        {
-            name: 'musicas',
-            description: 'as músicas para adicionar, separe por vírgula',
-            type: ApplicationCommandOptionType.String,
-            required: true,
-        }
-    ],
 
     async execute({ inter }) {
         await inter.deferReply({ ephemeral: true });

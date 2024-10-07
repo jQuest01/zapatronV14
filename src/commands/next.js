@@ -1,8 +1,10 @@
+const { SlashCommandBuilder } = require('discord.js');
 const { next } = require('../controller/comandosController')
 
 module.exports = {
-    name: 'next',
-    description: "Pula para a próxima música",
+    data: new SlashCommandBuilder()
+        .setName('next')
+        .setDescription("Pula para a próxima música"),
     voiceChannel: true,
 
     async execute({ inter }) {

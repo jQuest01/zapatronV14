@@ -1,18 +1,12 @@
-const { ApplicationCommandOptionType } = require('discord.js');
+const { SlashCommandBuilder, SlashCommandStringOption } = require('discord.js');
 const { pula } = require('../controller/comandosController')
 
 module.exports = {
-    name: 'pula',
-    description: "Pula para alguma posição da lista",
+    data: new SlashCommandBuilder()
+        .setName('pula')
+        .setDescription("Pula para alguma posição da lista")
+        .addStringOption(new SlashCommandStringOption().setName('posicao').setDescription('a posição da música na lista').setRequired(true)),
     voiceChannel: true,
-    options: [
-        {
-            name: 'posicao',
-            description: 'a posição da música na lista',
-            type: ApplicationCommandOptionType.Integer,
-            required: true,
-        }
-    ],
 
     async execute({ inter }) {
         await inter.deferReply({ ephemeral: true });

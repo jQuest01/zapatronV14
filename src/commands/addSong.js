@@ -1,28 +1,14 @@
-const { ApplicationCommandOptionType } = require('discord.js');
+const { SlashCommandBuilder, SlashCommandStringOption } = require('discord.js');
 const axios = require('axios')
 
 module.exports = {
-    name: 'addsong',
-    description: "Adiciona uma música na lista do trivia",
+    data: new SlashCommandBuilder()
+        .setName('addsong')
+        .setDescription("Adiciona uma música na lista do trivia")
+        .addStringOption(new SlashCommandStringOption().setName('nome').setDescription('Nome da música pra adicionar').setRequired(true))
+        .addStringOption(new SlashCommandStringOption().setName('link').setDescription('Link da música pra adicionar').setRequired(true))
+        .addStringOption(new SlashCommandStringOption().setName('cantor').setDescription('Cantor da música (se for mais de um, separe por virgula)').setRequired(true)),
     voiceChannel: false,
-    options: [
-        {
-            name: 'nome',
-            description: 'Nome da música pra adicionar',
-            type: ApplicationCommandOptionType.String,
-            required: true,
-        }, {
-            name: 'link',
-            description: 'Link da música pra adicionar',
-            type: ApplicationCommandOptionType.String,
-            required: true,
-        }, {
-            name: 'cantor',
-            description: 'Cantor da música (se for mais de um, separe por virgula)',
-            type: ApplicationCommandOptionType.String,
-            required: true,
-        }
-    ],
 
     async execute({ inter }) {
         const header = {

@@ -1,8 +1,10 @@
 const { readdirSync } = require('fs');
-const { Collection } = require('discord.js');
+const { REST, Routes, Collection } = require('discord.js');
+const CryptoJS = require("crypto-js");
 
 client.commands = new Collection();
-CommandsArray = [];
+const commandsArray = [];
+const commandsRest = []
 
 const events = readdirSync('./src/discordEvents/').filter(file => file.endsWith('.js'));
 
@@ -21,14 +23,37 @@ const commands = readdirSync(`./src/commands/`).filter(files => files.endsWith('
 
 for (const file of commands) {
     const command = require(`../commands/${file}`);
-    if (command.name && command.description) {
-        CommandsArray.push(command);
-        console.log(`-> [Comando Carregado] ${command.name.toLowerCase()}`);
-        client.commands.set(command.name.toLowerCase(), command);
+    if (command.data.name && command.data.description) {
+        commandsArray.push(command);
+        commandsRest.push(command.data.toJSON())
+        console.log(`-> [Comando Carregado] ${command.data.name.toLowerCase()}`);
+        client.commands.set(command.data.name.toLowerCase(), command);
         delete require.cache[require.resolve(`../commands/${file}`)];
-    } else console.log(`[Comando Falhou]  ${command.name.toLowerCase()}`)
+    } else console.log(`[Comando Falhou]  ${command.data.name.toLowerCase()}`)
 };
 
-client.on('ready', (client) => {
-    client.application.commands.set(CommandsArray)
-})
+// Construct and prepare an instance of the REST module
+const key = "12345";
+const decryptedTkn = CryptoJS.AES.decrypt(process.env.DISCORD_BOT_TOKEN, key)
+
+const dToken = decryptedTkn.toString(CryptoJS.enc.Utf8);
+
+const rest = new REST().setToken(dToken);
+
+// and deploy your commands!
+(async () => {
+    try {
+        console.log(`Started refreshing ${commandsRest.length} application (/) commands.`);
+
+        // The put method is used to fully refresh all commands in the guild with the current set
+        const data = await rest.put(
+            Routes.applicationGuildCommands(process.env.BOT_ID, '703253020716171365'),
+            { body: commandsRest },
+        );
+
+        console.log(`Successfully reloaded ${data.length} application (/) commands.`);
+    } catch (error) {
+        // And of course, make sure you catch and log any errors!
+        console.error(error);
+    }
+})();

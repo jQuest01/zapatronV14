@@ -1,8 +1,10 @@
+const { SlashCommandBuilder } = require('discord.js');
 const comandosController = require('../controller/comandosController')
 
 module.exports = {
-    name: 'continue',
-    description: "Despausa a playlist",
+    data: new SlashCommandBuilder()
+        .setName('continue')
+        .setDescription("Despausa a playlist"),
     voiceChannel: true,
 
     async execute({ inter }) {
