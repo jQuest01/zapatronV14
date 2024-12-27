@@ -29,7 +29,13 @@ distube.on('playSong', async (queue, track) => {
                     msgId = msgId === '' ? msg.id : msgId
                 })
             } else {
-                client.channels.cache.get(queue.textChannel.id).messages.edit(msgId, { components: montaBotoesConfig(queue), embeds: [embed] })
+                try {
+                    client.channels.cache.get(queue.textChannel.id).messages.edit(msgId, { components: montaBotoesConfig(queue), embeds: [embed] })
+                } catch (error) {
+                    queue.textChannel.send({ embeds: [embed], components: montaBotoesConfig(queue) }).then(msg => {
+                        msgId = msgId === '' ? msg.id : msgId
+                    })
+                }
             }
         } catch (error) {
             console.log(new Date().toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" }), error)

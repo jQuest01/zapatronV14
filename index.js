@@ -3,7 +3,7 @@ const { Client, GatewayIntentBits, Collection, Interaction, EmbedBuilder } = req
 
 const { DisTube } = require('distube');
 const { SoundCloudPlugin } = require('@distube/soundcloud');
-const { YouTubePlugin } = require('@distube/youtube')
+// const { YouTubePlugin } = require('@distube/youtube')
 // const ffmpeg = require('ffmpeg-static')
 
 const CryptoJS = require("crypto-js");
@@ -36,7 +36,7 @@ const jobToken = new CronJob('*/30 * * * *', async function () {
 }, null, true, "America/Sao_Paulo");
 
 const createDistube = async () => {
-    const getCookies = require('./src/controller/comandosController')['getCookies']
+    // const getCookies = require('./src/controller/comandosController')['getCookies']
     // const cookies = await getCookies(null)
 
     return new DisTube(client, {
@@ -46,9 +46,11 @@ const createDistube = async () => {
         nsfw: true,
         // leaveOnStop: true,
         // ffmpeg: { path: ffmpeg },
-        plugins: [new YouTubePlugin({
-            // cookies: cookies
-        }), new SoundCloudPlugin()]
+        plugins: [
+            // new YouTubePlugin({
+            //     cookies: cookies
+            // }),
+            new SoundCloudPlugin()]
     })
 }
 
