@@ -57,17 +57,23 @@ module.exports = async (client, inter) => {
         if (inter.member.voice.channel) {
             const queue = distube.getQueue(inter.guildId)
 
-            const embed = new EmbedBuilder()
-                .setTitle('A música que tá tocando é essa: ')
-                .setDescription(`\n[${queue.songs[0].name}](${queue.songs[0].url})`)
-                .setImage(queue.songs[0].thumbnail)
-                .setColor("0099ff")
-                .setFooter({
-                    text: `Adicionado por ${queue.songs[0].member.displayName ? queue.songs[0].member.displayName : queue.songs[0].member.username}`,
-                    iconURL: queue.songs[0].user.avatarURL()
-                })
-            let rows = montaBotoesConfig(inter)
-            client.channels.cache.get(inter.channelId).messages.edit(msgId, { components: rows, embeds: [embed] })
+            if (queue) {
+                const embed = new EmbedBuilder()
+                    .setTitle('A música que tá tocando é essa: ')
+                    .setDescription(`\n[${queue.songs[0].name}](${queue.songs[0].url})`)
+                    .setImage(queue.songs[0].thumbnail)
+                    .setColor("0099ff")
+                    .setFooter({
+                        text: `Adicionado por ${queue.songs[0].member.displayName ? queue.songs[0].member.displayName : queue.songs[0].member.username}`,
+                        iconURL: queue.songs[0].user.avatarURL()
+                    })
+                let rows = montaBotoesConfig(inter)
+                client.channels.cache.get(inter.channelId).messages.edit(msgId, { components: rows, embeds: [embed] })
+            } else {
+                client.channels.cache.get(inter.channelId).messages.delete(msgId)
+                msgId = ''
+            }
+
         }
     }
 

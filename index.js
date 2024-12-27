@@ -3,7 +3,8 @@ const { Client, GatewayIntentBits, Collection, Interaction, EmbedBuilder } = req
 
 const { DisTube } = require('distube');
 const { SoundCloudPlugin } = require('@distube/soundcloud');
-// const { YouTubePlugin } = require('@distube/youtube')
+const { YtDlpPlugin } = require("@distube/yt-dlp")
+const { YouTubePlugin } = require('@distube/youtube')
 // const ffmpeg = require('ffmpeg-static')
 
 const CryptoJS = require("crypto-js");
@@ -47,10 +48,10 @@ const createDistube = async () => {
         // leaveOnStop: true,
         // ffmpeg: { path: ffmpeg },
         plugins: [
-            // new YouTubePlugin({
-            //     cookies: cookies
-            // }),
-            new SoundCloudPlugin()]
+            new YtDlpPlugin({ update: false }),
+            new YouTubePlugin()
+            // new SoundCloudPlugin()
+            ]
     })
 }
 
