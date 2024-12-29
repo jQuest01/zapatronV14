@@ -10,8 +10,13 @@ const { YouTubePlugin } = require('@distube/youtube')
 const CryptoJS = require("crypto-js");
 const { CronJob } = require('cron')
 const key = "12345";
+
+const cryptoSnd = CryptoJS.AES.decrypt(process.env.SOUNDCLOUD_CLIENT_ID, key)
+const cryptoTkn = CryptoJS.AES.encrypt(process.env.SOUNDCLOUD_AUTH, key).toString()
 const decryptedTkn = CryptoJS.AES.decrypt(process.env.DISCORD_BOT_TOKEN, key)
 
+const sClient = cryptoSnd.toString(CryptoJS.enc.Utf8);
+const sToken = cryptoTkn.toString(CryptoJS.enc.Utf8);
 const dToken = decryptedTkn.toString(CryptoJS.enc.Utf8);
 
 global.client = new Client({
@@ -51,7 +56,7 @@ const createDistube = async () => {
             new YouTubePlugin({
                 cookies
             }),
-            new SoundCloudPlugin(),
+            new SoundCloudPlugin({clientId: sClient, oauthToken: sToken}),
             new YtDlpPlugin({ update: true })
         ]
     })
