@@ -37,8 +37,8 @@ const jobToken = new CronJob('*/30 * * * *', async function () {
 }, null, true, "America/Sao_Paulo");
 
 const createDistube = async () => {
-    // const getCookies = require('./src/controller/comandosController')['getCookies']
-    // const cookies = await getCookies(null)
+    const getCookies = require('./src/controller/comandosController')['getCookies']
+    const cookies = await getCookies(null)
 
     return new DisTube(client, {
         // leaveOnEmpty: true,
@@ -48,10 +48,12 @@ const createDistube = async () => {
         // leaveOnStop: true,
         // ffmpeg: { path: ffmpeg },
         plugins: [
-            new YtDlpPlugin({ update: false }),
-            new YouTubePlugin()
-            // new SoundCloudPlugin()
-            ]
+            new YouTubePlugin({
+                cookies
+            }),
+            new SoundCloudPlugin(),
+            new YtDlpPlugin({ update: true })
+        ]
     })
 }
 
