@@ -56,7 +56,7 @@ const createDistube = async () => {
             new YouTubePlugin({
                 cookies
             }),
-            new SoundCloudPlugin({clientId: sClient, oauthToken: sToken}),
+            // new SoundCloudPlugin({clientId: sClient, oauthToken: sToken}),
             new YtDlpPlugin({ update: true })
         ]
     })
