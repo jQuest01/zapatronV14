@@ -179,52 +179,26 @@ module.exports = {
         }
 
         try {
-            // distube.play(message.member.voice.channel, search, {
-            //     textChannel: message.channel,
-            //     member: message.member,
-            // });
             if (search.includes('http')) {
                 distube.play(message.member.voice.channel, search, {
                     textChannel: message.channel,
                     member: message.member,
                 });
             } else {
-                for (const plugin of distube.plugins) {
-                    try {
-                        const songUrl = await plugin.searchSong(search)
-                        distube.play(message.member.voice.channel, songUrl.url, {
-                            textChannel: message.channel,
-                            member: message.member,
-                        });
-
-                        return
-                    } catch (error) { }
-                }
+                const songUrl = await distube.plugins[1].searchSong(search)
+                distube.play(message.member.voice.channel, songUrl.url, {
+                    textChannel: message.channel,
+                    member: message.member,
+                });
             }
-
         } catch (error) {
             console.log(error, ' Será feito uma nova tentativa')
-
+            
             try {
-                if (search.includes('http')) {
-                    distube.play(message.member.voice.channel, search, {
-                        textChannel: message.channel,
-                        member: message.member,
-                    });
-                } else {
-                    for (const plugin of distube.plugins) {
-                        try {
-                            const songUrl = await plugin.searchSong(search)
-                            distube.play(message.member.voice.channel, songUrl.url, {
-                                textChannel: message.channel,
-                                member: message.member,
-                            });
-
-                            return
-                        } catch (error) { }
-                    }
-
-                }
+                distube.play(message.member.voice.channel, search, {
+                    textChannel: client.channels.cache.get('720766817588478054'),
+                    member: message.member,
+                });
             } catch (error) {
                 console.log(error)
                 return new EmbedBuilder().setTitle('Erro').setDescription('Erro ao incluir música/playlist\nTalvez o vídeo seja permitido apenas para maiores de idade').setColor("#FF0000")
