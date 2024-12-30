@@ -53,11 +53,11 @@ const createDistube = async () => {
         // leaveOnStop: true,
         // ffmpeg: { path: ffmpeg },
         plugins: [
-            new YouTubePlugin({
-                cookies
-            }),
-            // new SoundCloudPlugin({clientId: sClient, oauthToken: sToken}),
-            new YtDlpPlugin({ update: true })
+            // new YouTubePlugin({
+            //     cookies
+            // }),
+            new SoundCloudPlugin({clientId: sClient, oauthToken: sToken})
+            // new YtDlpPlugin({ update: true })
         ]
     })
 }

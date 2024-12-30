@@ -185,7 +185,7 @@ module.exports = {
                     member: message.member,
                 });
             // } else {
-            //     const songUrl = await distube.plugins[0].searchSong(search)
+            //     const songUrl = await distube.plugins[2].searchSong(search)
             //     distube.play(message.member.voice.channel, songUrl.url, {
             //         textChannel: message.channel,
             //         member: message.member,
