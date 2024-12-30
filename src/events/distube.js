@@ -5,9 +5,9 @@ const axios = require('axios');
 
 // const { DisTube } = require('distube');
 // const distube = new DisTube()
-distube.on('error', (queue, error) => {
+distube.on('error', (error, queue) => {
     console.log('trigger error')
-    console.log({ queue })
+    console.log({ queue, error })
     console.log(`Error emitted from the queue ${error.message}`);
 });
 
