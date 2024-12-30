@@ -179,18 +179,18 @@ module.exports = {
         }
 
         try {
-            if (search.includes('http')) {
+            // if (search.includes('http')) {
                 distube.play(message.member.voice.channel, search, {
                     textChannel: message.channel,
                     member: message.member,
                 });
-            } else {
-                const songUrl = await distube.plugins[0].searchSong(search)
-                distube.play(message.member.voice.channel, songUrl.url, {
-                    textChannel: message.channel,
-                    member: message.member,
-                });
-            }
+            // } else {
+            //     const songUrl = await distube.plugins[0].searchSong(search)
+            //     distube.play(message.member.voice.channel, songUrl.url, {
+            //         textChannel: message.channel,
+            //         member: message.member,
+            //     });
+            // }
         } catch (error) {
             console.log(error, ' Será feito uma nova tentativa')
             

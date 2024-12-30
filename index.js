@@ -5,7 +5,7 @@ const { DisTube } = require('distube');
 const { SoundCloudPlugin } = require('@distube/soundcloud');
 const { YtDlpPlugin } = require("@distube/yt-dlp")
 const { YouTubePlugin } = require('@distube/youtube')
-const ffmpeg = require('ffmpeg-static')
+// const ffmpeg = require('ffmpeg-static')
 
 const CryptoJS = require("crypto-js");
 const { CronJob } = require('cron')
@@ -51,7 +51,7 @@ const createDistube = async () => {
         // leaveOnFinish: false,
         nsfw: true,
         // leaveOnStop: true,
-        ffmpeg: { path: ffmpeg },
+        // ffmpeg: { path: ffmpeg },
         plugins: [
             new YouTubePlugin({
                 cookies
