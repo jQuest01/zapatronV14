@@ -95,6 +95,8 @@ client.on('ready', async () => {
     require('./src/events/distube')
     require('./src/events/loader')
     console.log('Subiu', new Date().toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" }))
+    
+    console.log(distube.options.ffmpeg)
 })
 
 global.isTriviaOn = false
