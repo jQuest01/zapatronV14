@@ -48,11 +48,6 @@ module.exports = async (client, inter) => {
     }
 
     if (inter.isButton()) {
-        // const embed = new EmbedBuilder()
-        //     .setTitle("Configurações")
-        //     .setColor("#2f3136")
-
-        // embed.setDescription("Cuidado onde vai mexer ai o saco de vacilo, essas merda ai que me faz funcionar direito")
         await inter.deferUpdate()
         if (inter.member.voice.channel) {
             const queue = distube.getQueue(inter.guildId)

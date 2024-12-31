@@ -1,4 +1,5 @@
 const { ActionRowBuilder, ButtonBuilder, ButtonStyle, StringSelectMenuBuilder } = require('discord.js')
+const { useQueue } = require('discord-player')
 // const { epic, prime, updateConfig, updateSteam } = require('./controllerExternos')
 
 // let idsArray = new HashMap()
@@ -17,16 +18,16 @@ module.exports = {
 function telaInicial(row, interaction) {
     if (!interaction) return []
     let rows = []
-    const queue = interaction.guildId ? distube.getQueue(interaction.guildId) : interaction
+    const queue = interaction.guildId ? useQueue(interaction.guildId) : interaction
 
     row.addComponents(
         new ButtonBuilder()
             .setCustomId('volta')
             .setStyle(ButtonStyle.Secondary)
             .setEmoji('<:skipback:1243671127356604541>')
-            .setDisabled(queue.previousSongs.length <= 0),
+            .setDisabled(queue.history.tracks.length <= 0),
 
-        !queue.paused ?
+        !queue.node.paused ?
             new ButtonBuilder()
                 .setCustomId('pause')
                 .setStyle(ButtonStyle.Primary)
@@ -40,7 +41,7 @@ function telaInicial(row, interaction) {
             .setCustomId('next')
             .setStyle(ButtonStyle.Secondary)
             .setEmoji('<:skipforward:1243671128732336189>')
-            .setDisabled(queue.songs.length <= 1),
+            .setDisabled(queue.tracks.length <= 1),
         new ButtonBuilder()
             .setCustomId('letra')
             .setStyle(ButtonStyle.Secondary)
@@ -56,7 +57,7 @@ function telaInicial(row, interaction) {
             .setStyle(ButtonStyle.Primary)
             .setEmoji('<:volume1:1243671133040017539>')
             .setDisabled(volume === 0),
-        queue.volume ?
+        queue.node.volume ?
             new ButtonBuilder()
                 .setCustomId('mute')
                 .setStyle(ButtonStyle.Danger)
@@ -76,7 +77,7 @@ function telaInicial(row, interaction) {
         new ButtonBuilder()
             .setCustomId('volume')
             .setDisabled(true)
-            .setLabel('Volume ' + queue.volume + '%')
+            .setLabel('Volume ' + queue.node.volume + '%')
             .setStyle(ButtonStyle.Secondary)
     )
 

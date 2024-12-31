@@ -1,11 +1,10 @@
 const { EmbedBuilder, ButtonBuilder, ButtonStyle } = require('discord.js')
 const { getRandom } = require('../trivia/triviaUtils')
 const CryptoJS = require("crypto-js");
+const { useMainPlayer, useQueue, useHistory } = require('discord-player')
 const fs = require('fs')
 const axios = require('axios')
 const key = "12345";
-// const { YouTubePlugin } = require("@distube/youtube")
-// const { DisTube } = require('distube');
 
 const getLetra = (title) =>
     new Promise(async (res, rej) => {
@@ -174,35 +173,33 @@ module.exports = {
             var search = message.content.slice(comando.length + 2)
         }
 
-        if (search.includes('spotify')) {
-            search = await getTitleSpotify(search)
-        }
+        // if (search.includes('spotify')) {
+        //     search = await getTitleSpotify(search)
+        // }
 
         try {
-            // if (search.includes('http')) {
-                distube.play(message.member.voice.channel, search, {
-                    textChannel: message.channel,
-                    member: message.member,
-                });
-            // } else {
-            //     const songUrl = await distube.plugins[2].searchSong(search)
-            //     distube.play(message.member.voice.channel, songUrl.url, {
-            //         textChannel: message.channel,
-            //         member: message.member,
-            //     });
-            // }
+            const player = useMainPlayer();
+
+            await player.play(message.member.voice.channel, search, {
+                nodeOptions: {
+                    metadata: {
+                        id: message.guildId,
+                        channel: message.channel,
+                        member: message.member
+                    }, // Store text channel as metadata on the queue
+                    leaveOnStop: true, //If player should leave the voice channel after user stops the player
+                    leaveOnEnd: true, //If player should leave after the whole queue is over
+                    leaveOnEndCooldown: 30000, //Cooldown in ms
+                    leaveOnEmpty: true, //If the player should leave when the voice channel is empty
+                    leaveOnEmptyCooldown: 300000, //Cooldown in ms
+                    skipOnNoStream: true,
+                },
+            });
+
         } catch (error) {
-            console.log(error, ' Será feito uma nova tentativa')
-            
-            try {
-                distube.play(message.member.voice.channel, search, {
-                    textChannel: client.channels.cache.get('720766817588478054'),
-                    member: message.member,
-                });
-            } catch (error) {
-                console.log(error)
-                return new EmbedBuilder().setTitle('Erro').setDescription('Erro ao incluir música/playlist\nTalvez o vídeo seja permitido apenas para maiores de idade').setColor("#FF0000")
-            }
+            console.log(error)
+
+            return new EmbedBuilder().setTitle('Erro').setDescription('Erro ao incluir música/playlist\nTalvez o vídeo seja permitido apenas para maiores de idade').setColor("#FF0000")
         }
 
     },
@@ -216,6 +213,7 @@ module.exports = {
     },
 
     async ps(message) {
+        const player = useMainPlayer();
         try {
             var search = message.options.getString('musicas');
         } catch (error) {
@@ -237,7 +235,7 @@ module.exports = {
             if (song.includes('http') || song.includes('www')) {
                 musicas.push(song)
             } else {
-                const songUrl = await distube.plugins[1].searchSong(search)
+                const songUrl = await player.search(search)
                 musicas.push(songUrl.url)
             }
         }
@@ -267,6 +265,7 @@ module.exports = {
     },
 
     busca(message) {
+        const player = useMainPlayer();
         if (!message.member.voice.channelId) {
             return new EmbedBuilder().setTitle('Erro').setDescription('Entre no chat de voz primeiro').setColor("#FF0000")
         }
@@ -326,64 +325,65 @@ module.exports = {
 
     pause(message) {
         // const distube = new DisTube(client, {})
-        const queue = distube.getQueue(message.guildId)
+        const queue = useQueue(message.guildId);
         // queue.paused
         // console.log(queue)
 
-        if (!queue || queue.paused || isTriviaOn) {
+        if (!queue || queue.node.isPaused() || isTriviaOn) {
             return
         }
 
-        queue.pause()
+        queue.node.setPaused(true)
     },
 
     continue(message) {
-        const queue = distube.getQueue(message.guildId)
+        const queue = useQueue(message.guildId);
 
-        if (!queue || !queue.paused || isTriviaOn) {
+        if (!queue || !queue.node.isPaused() || isTriviaOn) {
             return
         }
 
-        queue.resume()
+        queue.node.setPaused(false)
     },
 
     stop(message) {
-        const queue = distube.getQueue(message.guildId)
+        const queue = useQueue(message.guildId);
 
         if (isTriviaOn) {
             return
         }
 
-        if (!queue) {
-            distube.stop(message)
-            return
-        }
+        // if (!queue) {
+        //     distube.stop(message)
+        //     return
+        // }
 
-        queue.stop()
+        queue.delete();
     },
 
     async next(message) {
-        const queue = distube.getQueue(message.guildId)
+        const queue = useQueue(message.guildId);
 
-        if (!queue || queue.songs.length === 0 || isTriviaOn) {
+        if (!queue || queue.tracks.data.length === 0 || isTriviaOn) {
             return
         }
 
-        await queue.skip()
+        queue.node.skip()
     },
 
     async volta(message) {
-        const queue = distube.getQueue(message.guildId)
+        const queue = useQueue(message.guildId);
+        const history = useHistory(message.guildId);
 
-        if (!queue || isTriviaOn) {
+        if (!queue || isTriviaOn || !history) {
             return
         }
 
-        await queue.previous()
+        await history.previous()
     },
 
     lista(message) {
-        const queue = distube.getQueue(message.guildId)
+        const queue = useQueue(message.guildId);
 
         if (!queue || !queue.songs) {
             return new EmbedBuilder().setTitle('Erro').setDescription('A lista está vazia').setColor("#FF0000")
@@ -453,7 +453,7 @@ module.exports = {
     },
 
     async loop(message) {
-        let queue = distube.getQueue(message.guildId)
+        let queue = useQueue(message.guildId)
 
         if (!queue || !queue.songs || isTriviaOn) {
             const embed = new EmbedBuilder()
@@ -517,7 +517,7 @@ module.exports = {
     },
 
     async mute(message) {
-        let queue = distube.getQueue(message.guildId)
+        let queue = useQueue(message.guildId)
 
         if (!queue || !queue.songs || isTriviaOn) {
             return
@@ -527,7 +527,7 @@ module.exports = {
     },
 
     async unmute(message) {
-        let queue = distube.getQueue(message.guildId)
+        let queue = useQueue(message.guildId)
 
         if (!queue || !queue.songs || isTriviaOn) {
             return
@@ -537,7 +537,7 @@ module.exports = {
     },
 
     async mais(message) {
-        let queue = distube.getQueue(message.guildId)
+        let queue = useQueue(message.guildId)
 
         if (!queue || !queue.songs || isTriviaOn) {
             return
@@ -548,7 +548,7 @@ module.exports = {
     },
 
     async menos(message) {
-        let queue = distube.getQueue(message.guildId)
+        let queue = useQueue(message.guildId)
 
         if (!queue || !queue.songs || isTriviaOn) {
             return
@@ -564,7 +564,7 @@ module.exports = {
     },
 
     async shuffle(message) {
-        let queue = distube.getQueue(message.guildId)
+        let queue = useQueue(message.guildId)
 
         if (!queue || !queue.songs || isTriviaOn) {
             return
@@ -574,7 +574,7 @@ module.exports = {
     },
 
     async pula(message) {
-        let queue = distube.getQueue(message.guildId)
+        let queue = useQueue(message.guildId)
 
         if (!queue || !queue.songs || isTriviaOn) {
             return
@@ -608,7 +608,7 @@ module.exports = {
 
     },
     async letra(message) {
-        const queue = distube.getQueue(message.guildId)
+        const queue = useQueue(message.guildId)
         try {
             var index = message.content.indexOf(" ");
         } catch (error) {
@@ -639,28 +639,34 @@ module.exports = {
         }
 
         try {
-            const data = await getLetra(title);
-            var embed = cortaNome(4096, data.lyrics)
-            embed = embed[0].split('\n')
 
-            var letra = ''
-            pos = 0
-            for (nome of embed) {
-                letra += nome + '\n'
-                pos++
-                if (pos === 4) {
-                    pos = 0
-                    letra += '\n'
-                }
-            }
-            return message.channel.send({
-                embeds: [new EmbedBuilder()
-                    .setTitle(`${data.title} - ${data.author}`)
-                    .setDescription(letra)
-                    .setImage(data.thumbnail.genius)
-                    .setColor(config.cores.azul)
-                ]
+            const lyrics = await player.lyrics.search({
+                q: 'alan walker faded',
             });
+
+            if (!lyrics.length) {
+                return message.channel.send({
+                    embeds: [new EmbedBuilder()
+                        .setTitle('Erro')
+                        .setDescription('Não foi encontrado letra para essa música')
+                        .setColor("#FF0000")]
+                });
+            }
+
+            const trimmedLyrics = lyrics[0].plainLyrics.substring(0, 1997);
+
+            const embed = new EmbedBuilder()
+                .setTitle(lyrics[0].title)
+                .setURL(lyrics[0].url)
+                .setThumbnail(lyrics[0].thumbnail)
+                .setAuthor({
+                    name: lyrics[0].artist.name,
+                    iconURL: lyrics[0].artist.image,
+                    url: lyrics[0].artist.url,
+                })
+                .setDescription(trimmedLyrics.length === 1997 ? `${trimmedLyrics}...` : trimmedLyrics)
+                .setColor("#0099ff");
+            return embed
         } catch (err) {
             console.log(new Date(), err)
             message.channel.send({

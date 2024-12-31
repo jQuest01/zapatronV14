@@ -1,22 +1,15 @@
 require('dotenv').config()
 const { Client, GatewayIntentBits, Collection, Interaction, EmbedBuilder } = require("discord.js")
 
-const { DisTube } = require('distube');
-const { SoundCloudPlugin } = require('@distube/soundcloud');
-const { YtDlpPlugin } = require("@distube/yt-dlp")
-const { YouTubePlugin } = require('@distube/youtube')
+const { Player } = require('discord-player');
+const { YoutubeiExtractor } = require("discord-player-youtubei")
+const { SpotifyExtractor, SoundCloudExtractor } = require('@discord-player/extractor');
 // const ffmpeg = require('ffmpeg-static')
-
 const CryptoJS = require("crypto-js");
 const { CronJob } = require('cron')
 const key = "12345";
 
-const cryptoSnd = CryptoJS.AES.decrypt(process.env.SOUNDCLOUD_CLIENT_ID, key)
-const cryptoTkn = CryptoJS.AES.encrypt(process.env.SOUNDCLOUD_AUTH, key).toString()
 const decryptedTkn = CryptoJS.AES.decrypt(process.env.DISCORD_BOT_TOKEN, key)
-
-const sClient = cryptoSnd.toString(CryptoJS.enc.Utf8);
-const sToken = cryptoTkn.toString(CryptoJS.enc.Utf8);
 const dToken = decryptedTkn.toString(CryptoJS.enc.Utf8);
 
 global.client = new Client({
@@ -28,7 +21,7 @@ global.client = new Client({
     GatewayIntentBits.MessageContent]
 })
 
-global.distube = null
+global.player = null
 
 global.token = ''
 global.repeat = 0
@@ -40,27 +33,6 @@ const jobToken = new CronJob('*/30 * * * *', async function () {
     const update = require('./src/controller/comandosController')['updateToken']
     update(null)
 }, null, true, "America/Sao_Paulo");
-
-const createDistube = async () => {
-    const getCookies = require('./src/controller/comandosController')['getCookies']
-    const cookies = await getCookies(null)
-
-    return new DisTube(client, {
-        // leaveOnEmpty: true,
-        // emptyCooldown: 30,
-        // leaveOnFinish: false,
-        nsfw: true,
-        // leaveOnStop: true,
-        // ffmpeg: { path: ffmpeg },
-        plugins: [
-            // new YouTubePlugin({
-            //     cookies
-            // }),
-            new SoundCloudPlugin({clientId: sClient, oauthToken: sToken})
-            // new YtDlpPlugin({ update: true })
-        ]
-    })
-}
 
 client.on('messageCreate', async (message) => {
     if (message.author.bot) {
@@ -91,12 +63,14 @@ client.on('messageCreate', async (message) => {
 client.on('ready', async () => {
     const update = require('./src/controller/comandosController')['updateToken']
     await update(null)
-    distube = await createDistube()
-    require('./src/events/distube')
+    player = new Player(client)
+    await player.extractors.register(YoutubeiExtractor)
+    await player.extractors.register(SpotifyExtractor)
+    await player.extractors.register(SoundCloudExtractor)
+
+    require('./src/events/player')
     require('./src/events/loader')
     console.log('Subiu', new Date().toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" }))
-    
-    console.log(distube.options.ffmpeg)
 })
 
 global.isTriviaOn = false
