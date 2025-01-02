@@ -64,7 +64,7 @@ client.on('ready', async () => {
     const update = require('./src/controller/comandosController')['updateToken']
     await update(null)
     player = new Player(client)
-    await player.extractors.register(YoutubeiExtractor)
+    // await player.extractors.register(YoutubeiExtractor)
     await player.extractors.register(SpotifyExtractor)
     await player.extractors.register(SoundCloudExtractor)
 
