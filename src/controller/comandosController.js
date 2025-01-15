@@ -174,14 +174,26 @@ module.exports = {
             var search = message.content.slice(comando.length + 2)
         }
 
+        if (search.includes('spotify')) {
+            search = await getTitleSpotify(search)
+        }
+
         try {
-            distube.play(message.member.voice.channel, search, {
-                textChannel: message.channel,
-                member: message.member,
-            });
+            // if (search.includes('http')) {
+                distube.play(message.member.voice.channel, search, {
+                    textChannel: message.channel,
+                    member: message.member,
+                });
+            // } else {
+            //     const songUrl = await distube.plugins[2].searchSong(search)
+            //     distube.play(message.member.voice.channel, songUrl.url, {
+            //         textChannel: message.channel,
+            //         member: message.member,
+            //     });
+            // }
         } catch (error) {
             console.log(error, ' Será feito uma nova tentativa')
-
+            
             try {
                 distube.play(message.member.voice.channel, search, {
                     textChannel: client.channels.cache.get('720766817588478054'),
