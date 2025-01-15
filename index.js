@@ -3,6 +3,7 @@ const { Client, GatewayIntentBits, Collection, Interaction, EmbedBuilder } = req
 
 const { DisTube } = require('distube');
 const { SoundCloudPlugin } = require('@distube/soundcloud');
+const { SpotifyPlugin } = require('@distube/spotify');
 const { YtDlpPlugin } = require("@distube/yt-dlp")
 const { YouTubePlugin } = require('@distube/youtube')
 // const ffmpeg = require('ffmpeg-static')
@@ -11,13 +12,18 @@ const CryptoJS = require("crypto-js");
 const { CronJob } = require('cron')
 const key = "12345";
 
-const cryptoSnd = CryptoJS.AES.decrypt(process.env.SOUNDCLOUD_CLIENT_ID, key)
-const cryptoTkn = CryptoJS.AES.encrypt(process.env.SOUNDCLOUD_AUTH, key).toString()
+const cryptoSnd = CryptoJS.AES.decrypt(process.env.SPOTIFY_CLIENT_ID, key)
+const cryptoTkn = CryptoJS.AES.decrypt(process.env.SPOTIFY_CLIENT_SECRET, key)
+const cryptoSpt = CryptoJS.AES.decrypt(process.env.SPOTIFY_CLIENT_ID, key)
+const cryptoSct = CryptoJS.AES.decrypt(process.env.SPOTIFY_CLIENT_SECRET, key)
 const decryptedTkn = CryptoJS.AES.decrypt(process.env.DISCORD_BOT_TOKEN, key)
 
 const sClient = cryptoSnd.toString(CryptoJS.enc.Utf8);
 const sToken = cryptoTkn.toString(CryptoJS.enc.Utf8);
 const dToken = decryptedTkn.toString(CryptoJS.enc.Utf8);
+
+const clientId = cryptoSpt.toString(CryptoJS.enc.Utf8);
+const clientSecret = cryptoSct.toString(CryptoJS.enc.Utf8);
 
 global.client = new Client({
     intents: [GatewayIntentBits.Guilds,
@@ -56,8 +62,13 @@ const createDistube = async () => {
             // new YouTubePlugin({
             //     cookies
             // }),
-            new SoundCloudPlugin({clientId: sClient, oauthToken: sToken})
-            // new YtDlpPlugin({ update: true })
+            new SpotifyPlugin({
+                api: {
+                    clientId, clientSecret
+                }
+            }),
+            new SoundCloudPlugin({ clientId: sClient, oauthToken: sToken }),
+            new YtDlpPlugin({ update: true })
         ]
     })
 }
@@ -95,8 +106,6 @@ client.on('ready', async () => {
     require('./src/events/distube')
     require('./src/events/loader')
     console.log('Subiu', new Date().toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" }))
-    
-    console.log(distube.options.ffmpeg)
 })
 
 global.isTriviaOn = false
