@@ -75,7 +75,7 @@ const createDistube = async () => {
 
 client.on('messageCreate', async (message) => {
     if (message.author.bot) {
-        return
+        return 
     }
     if (message.content.startsWith('-')) {
         let comando = message.content.substring(1).split(/ +/)[0]
