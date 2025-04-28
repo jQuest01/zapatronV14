@@ -1,29 +1,31 @@
 require('dotenv').config()
 const { Client, GatewayIntentBits, Collection, Interaction, EmbedBuilder } = require("discord.js")
 
-const { DisTube } = require('distube');
-const { SoundCloudPlugin } = require('@distube/soundcloud');
-const { SpotifyPlugin } = require('@distube/spotify');
-const { YtDlpPlugin } = require("@distube/yt-dlp")
-const { YouTubePlugin } = require('@distube/youtube')
+// const { DisTube } = require('distube');
+// const { SoundCloudPlugin } = require('@distube/soundcloud');
+// const { SpotifyPlugin } = require('@distube/spotify');
+// const { YtDlpPlugin } = require("@distube/yt-dlp")
+// const { YouTubePlugin } = require('@distube/youtube')
 // const ffmpeg = require('ffmpeg-static')
 
 const CryptoJS = require("crypto-js");
 const { CronJob } = require('cron')
 const key = "12345";
+const { Manager } = require('erela.js');
 
-const cryptoSnd = CryptoJS.AES.decrypt(process.env.SPOTIFY_CLIENT_ID, key)
-const cryptoTkn = CryptoJS.AES.decrypt(process.env.SPOTIFY_CLIENT_SECRET, key)
-const cryptoSpt = CryptoJS.AES.decrypt(process.env.SPOTIFY_CLIENT_ID, key)
-const cryptoSct = CryptoJS.AES.decrypt(process.env.SPOTIFY_CLIENT_SECRET, key)
+// const cryptoSnd = CryptoJS.AES.decrypt(process.env.SPOTIFY_CLIENT_ID, key)
+// const cryptoTkn = CryptoJS.AES.decrypt(process.env.SPOTIFY_CLIENT_SECRET, key)
+
+// const cryptoSpt = CryptoJS.AES.decrypt(process.env.SPOTIFY_CLIENT_ID, key)
+// const cryptoSct = CryptoJS.AES.decrypt(process.env.SPOTIFY_CLIENT_SECRET, key)
 const decryptedTkn = CryptoJS.AES.decrypt(process.env.DISCORD_BOT_TOKEN, key)
 
-const sClient = cryptoSnd.toString(CryptoJS.enc.Utf8);
-const sToken = cryptoTkn.toString(CryptoJS.enc.Utf8);
+// const sClient = cryptoSnd.toString(CryptoJS.enc.Utf8);
+// const sToken = cryptoTkn.toString(CryptoJS.enc.Utf8);
 const dToken = decryptedTkn.toString(CryptoJS.enc.Utf8);
 
-const clientId = cryptoSpt.toString(CryptoJS.enc.Utf8);
-const clientSecret = cryptoSct.toString(CryptoJS.enc.Utf8);
+// const clientId = cryptoSpt.toString(CryptoJS.enc.Utf8);
+// const clientSecret = cryptoSct.toString(CryptoJS.enc.Utf8);
 
 global.client = new Client({
     intents: [GatewayIntentBits.Guilds,
@@ -42,40 +44,61 @@ global.volume = 50
 global.msgId = ''
 global.jsonServer = 'https://zapas.discloud.app'
 
+// Manager do Erela.js
+global.manager = new Manager({
+    // nodes: [{
+    //     host: "localhost",
+    //     port: 2333,
+    //     password: "zapas123",
+    //     secure: true,
+    // }],
+    nodes: [{
+        host: "lavalink-67hi.onrender.com",
+        port: 443,
+        password: "zapas@123",
+        secure: true, // MUITO IMPORTANTE (porque o Render usa https)
+        endpoint: '/v4/websocket'
+    }],
+    send: (id, payload) => {
+        const guild = client.guilds.cache.get(id);
+        if (guild) guild.shard.send(payload);
+    },
+});
+
 const jobToken = new CronJob('*/30 * * * *', async function () {
     const update = require('./src/controller/comandosController')['updateToken']
     update(null)
 }, null, true, "America/Sao_Paulo");
 
-const createDistube = async () => {
-    const getCookies = require('./src/controller/comandosController')['getCookies']
-    const cookies = await getCookies(null)
+// const createDistube = async () => {
+//     const getCookies = require('./src/controller/comandosController')['getCookies']
+//     const cookies = await getCookies(null)
 
-    return new DisTube(client, {
-        // leaveOnEmpty: true,
-        // emptyCooldown: 30,
-        // leaveOnFinish: false,
-        nsfw: true,
-        // leaveOnStop: true,
-        // ffmpeg: { path: ffmpeg },
-        plugins: [
-            // new YouTubePlugin({
-            //     cookies
-            // }),
-            new SpotifyPlugin({
-                api: {
-                    clientId, clientSecret
-                }
-            }),
-            new SoundCloudPlugin({ clientId: sClient, oauthToken: sToken }),
-            new YtDlpPlugin({ update: true })
-        ]
-    })
-}
+//     return new DisTube(client, {
+//         // leaveOnEmpty: true,
+//         // emptyCooldown: 30,
+//         // leaveOnFinish: false,
+//         nsfw: true,
+//         // leaveOnStop: true,
+//         // ffmpeg: { path: ffmpeg },
+//         plugins: [
+//             // new YouTubePlugin({
+//             //     cookies
+//             // }),
+//             new SpotifyPlugin({
+//                 api: {
+//                     clientId, clientSecret
+//                 }
+//             }),
+//             new SoundCloudPlugin({ clientId: sClient, oauthToken: sToken }),
+//             new YtDlpPlugin({ update: true })
+//         ]
+//     })
+// }
 
 client.on('messageCreate', async (message) => {
     if (message.author.bot) {
-        return 
+        return
     }
     if (message.content.startsWith('-')) {
         let comando = message.content.substring(1).split(/ +/)[0]
@@ -102,10 +125,23 @@ client.on('messageCreate', async (message) => {
 client.on('ready', async () => {
     const update = require('./src/controller/comandosController')['updateToken']
     await update(null)
-    distube = await createDistube()
-    require('./src/events/distube')
+    // distube = await createDistube()
+    // require('./src/events/distube')
+    manager.init(client.user.id);
     require('./src/events/loader')
     console.log('Subiu', new Date().toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" }))
+})
+
+manager.on("nodeConnect", (node) => {
+    console.log(`Conectado ao nó: ${node.options.id}`);
+});
+
+manager.on("nodeError", (node, error) => {
+    console.error(`Erro no nó ${node.options.id}:`, error);
+});
+
+manager.on("nodeCreate", (node) => {
+    console.log("TESTE "+node)
 })
 
 global.isTriviaOn = false

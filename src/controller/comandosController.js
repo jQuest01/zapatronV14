@@ -160,39 +160,67 @@ module.exports = {
 
     async play(message) {
         try {
-            var search = message.options.getString('musica');
-        } catch (error) {
-            if (!message.member.voice.channelId) {
-                return new EmbedBuilder().setTitle('Erro').setDescription('Entre no chat de voz primeiro').setColor("#FF0000")
+            const isInteraction = !!message.isCommand;
+
+            // Campos corrigidos
+            const guildId = isInteraction ? message.guildId : message.guild.id;
+            const channelId = isInteraction ? message.channelId : message.channel.id;
+            const user = isInteraction ? message.user : message.author;
+            const voiceChannel = message.member.voice.channel;
+
+            // Se for mensagem normal (prefix), validar canal de voz
+            if (!isInteraction && !voiceChannel) {
+                return new EmbedBuilder()
+                    .setTitle('Erro')
+                    .setDescription('Você precisa estar em um canal de voz!')
+                    .setColor('#FF0000')
             }
 
-            const comando = message.content.substring(1).split(/ +/)[0]
-            const index = message.content.indexOf(" ");
-            if (index === -1) {
-                return
+            // Pegar o que foi digitado
+            let search;
+            if (isInteraction) {
+                search = message.options.getString('musica');
+            } else {
+                const comando = message.content.substring(1).split(/ +/)[0];
+                const index = message.content.indexOf(" ");
+                if (index === -1) return;
+                search = message.content.slice(comando.length + 2);
             }
-            var search = message.content.slice(comando.length + 2)
-        }
 
-        try {
-            distube.play(message.member.voice.channel, search, {
-                textChannel: message.channel,
-                member: message.member,
+            // Criar ou pegar player
+            let player = manager.create({
+                guild: guildId,
+                voiceChannel: voiceChannel.id,
+                textChannel: channelId,
+                selfDeafen: true,
             });
-        } catch (error) {
-            console.log(error, ' Será feito uma nova tentativa')
+            player.connect();
 
-            try {
-                distube.play(message.member.voice.channel, search, {
-                    textChannel: client.channels.cache.get('720766817588478054'),
-                    member: message.member,
-                });
-            } catch (error) {
-                console.log(error)
-                return new EmbedBuilder().setTitle('Erro').setDescription('Erro ao incluir música/playlist\nTalvez o vídeo seja permitido apenas para maiores de idade').setColor("#FF0000")
+            // Fazer a pesquisa
+            const result = await manager.search(search, user);
+
+            if (result.loadType === 'NO_MATCHES') {
+                return new EmbedBuilder().setTitle('Erro').setDescription('Nenhum resultado encontrado!');
+            } else if (result.loadType === 'LOAD_FAILED') {
+                return new EmbedBuilder().setTitle('Erro').setDescription('Erro ao carregar a música!');
             }
-        }
 
+            if (result.playlist) {
+                for (const track of result.tracks) {
+                    player.queue.add(track);
+                }
+            } else {
+                const track = result.tracks[0];
+                player.queue.add(track);
+            }
+
+            if (!player.playing && !player.paused && !player.queue.size) {
+                player.play();
+            }
+        } catch (error) {
+            console.error(error);
+            return new EmbedBuilder().setTitle('Erro').setDescription('Erro ao incluir música/playlist.');
+        }
     },
 
     async p(message) {
