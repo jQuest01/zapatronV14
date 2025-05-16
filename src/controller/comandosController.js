@@ -7,6 +7,11 @@ const key = "12345";
 // const { YouTubePlugin } = require("@distube/youtube")
 // const { DisTube } = require('distube');
 
+const calculaDuracao = (milis) => {
+    milis = milis / 1000
+    return `${milis / 60 | 0}:${milis % 60 < 10 ? '0' + milis % 60 : milis % 60}`
+}
+
 const getLetra = (title) =>
     new Promise(async (res, rej) => {
         const url = `https://some-random-api.ml/lyrics?title=${title}`
@@ -18,6 +23,21 @@ const getLetra = (title) =>
         }
     });
 
+const validaRepeat = (repeat) => {
+    switch (repeat) {
+        case (0): {
+            return "none"
+        }
+        case (1): {
+            return 'queue'
+        }
+        case (2): {
+            return 'track'
+        }
+    }
+}
+
+
 const cortaNome = (length, value) => {
     const replaced = value.replace(/\n/g, "--");
     const regex = `.{1,${length}}`;
@@ -27,7 +47,7 @@ const cortaNome = (length, value) => {
     return lines;
 };
 
-inverteArray = (array) => {
+const inverteArray = (array) => {
     let newArray = []
 
     for (i = array.length - 1; i >= 0; i--) {
@@ -68,21 +88,6 @@ module.exports = {
         }).then((response) => response.data.token)
 
         console.log('Token atualizado com sucesso')
-    },
-
-    async getCookies(message) {
-        if (message) return
-        console.log('Atualizando cookies do youtube')
-        const header = {
-            'Authorization': token
-        }
-
-        const cookies = await axios.get(`${jsonServer}/api/cookies`, {
-            headers: header
-        }).then((res) => res.data)
-
-        return cookies
-
     },
 
     async quiz(message) {
@@ -169,11 +174,8 @@ module.exports = {
             const voiceChannel = message.member.voice.channel;
 
             // Se for mensagem normal (prefix), validar canal de voz
-            if (!isInteraction && !voiceChannel) {
-                return new EmbedBuilder()
-                    .setTitle('Erro')
-                    .setDescription('Você precisa estar em um canal de voz!')
-                    .setColor('#FF0000')
+            if (!voiceChannel) {
+                return new EmbedBuilder().setTitle('Erro').setDescription('Entre no chat de voz primeiro').setColor("#FF0000")
             }
 
             // Pegar o que foi digitado
@@ -188,33 +190,34 @@ module.exports = {
             }
 
             // Criar ou pegar player
-            let player = manager.create({
-                guild: guildId,
-                voiceChannel: voiceChannel.id,
-                textChannel: channelId,
-                selfDeafen: true,
-            });
-            player.connect();
+            let player = manager.getPlayer(guildId)
+            if (!player) {
+                player = await manager.createPlayer({
+                    guildId: guildId,
+                    voiceId: voiceChannel.id,
+                    textId: channelId,
+                    deaf: true,
+                    volume
+                });
+            }
 
             // Fazer a pesquisa
-            const result = await manager.search(search, user);
+            const result = await player.search(search, { requester: user });
 
-            if (result.loadType === 'NO_MATCHES') {
+            if (!result.tracks.length) {
                 return new EmbedBuilder().setTitle('Erro').setDescription('Nenhum resultado encontrado!');
-            } else if (result.loadType === 'LOAD_FAILED') {
-                return new EmbedBuilder().setTitle('Erro').setDescription('Erro ao carregar a música!');
             }
 
-            if (result.playlist) {
+            if (result.type === "PLAYLIST") {
                 for (const track of result.tracks) {
-                    player.queue.add(track);
+                    player.queue.add(track)
                 }
             } else {
-                const track = result.tracks[0];
-                player.queue.add(track);
+                const track = result.tracks[0]
+                player.queue.add(track)
             }
 
-            if (!player.playing && !player.paused && !player.queue.size) {
+            if (!player.playing && !player.paused) {
                 player.play();
             }
         } catch (error) {
@@ -233,57 +236,67 @@ module.exports = {
 
     async ps(message) {
         try {
-            var search = message.options.getString('musicas');
-        } catch (error) {
-            if (!message.member.voice.channelId) {
+            const isInteraction = !!message.isCommand;
+
+            // Campos corrigidos
+            const guildId = isInteraction ? message.guildId : message.guild.id;
+            const channelId = isInteraction ? message.channelId : message.channel.id;
+            const user = isInteraction ? message.user : message.author;
+            const voiceChannel = message.member.voice.channel;
+
+            // Se for mensagem normal (prefix), validar canal de voz
+            if (!voiceChannel) {
                 return new EmbedBuilder().setTitle('Erro').setDescription('Entre no chat de voz primeiro').setColor("#FF0000")
             }
 
-            const comando = message.content.substring(1).split(/ +/)[0]
-            const index = message.content.indexOf(" ");
-            if (index === -1) {
-                return
-            }
-            var search = message.content.slice(comando.length + 2)
-        }
-
-        search = search.split(',')
-        const musicas = []
-        for (const song of search) {
-            if (song.includes('http') || song.includes('www')) {
-                musicas.push(song)
+            // Pegar o que foi digitado
+            let search;
+            if (isInteraction) {
+                search = message.options.getString('musicas');
             } else {
-                const songUrl = await distube.plugins[1].searchSong(search)
-                musicas.push(songUrl.url)
+                const comando = message.content.substring(1).split(/ +/)[0];
+                const index = message.content.indexOf(" ");
+                if (index === -1) return;
+                search = message.content.slice(comando.length + 2);
             }
-        }
-        const playlist = await distube.createCustomPlaylist(musicas, {
-            member: message.member,
-            properties: { name: "Playlist", source: "custom" },
-            parallel: true
-        });
 
-        try {
-            await distube.play(message.member.voice.channel, playlist, {
-                textChannel: message.channel,
-                member: message.member
-            });
-        } catch (error) {
-            console.log(error, ' Será feito uma nova tentativa')
-            try {
-                await distube.play(message.member.voice.channel, playlist, {
-                    textChannel: client.channels.cache.get('720766817588478054'),
-                    member: message.member,
+            search = search.split(',')
+
+            // Criar ou pegar player
+            let player = manager.getPlayer(guildId)
+            if (!player) {
+                player = await manager.createPlayer({
+                    guildId: guildId,
+                    voiceId: voiceChannel.id,
+                    textId: channelId,
+                    deaf: true,
+                    volume
                 });
-            } catch (error) {
-                console.log(error)
-                return new EmbedBuilder().setTitle('Erro').setDescription('Erro ao incluir música ').setColor("#FF0000")
             }
+
+            // Fazer a pesquisa
+            for (const song of search) {
+                const result = await player.search(song, { requester: user });
+                const track = result.tracks[0];
+                player.queue.add(track);
+            }
+
+            if (!player.playing && !player.paused) {
+                player.play();
+            }
+        } catch (error) {
+            console.error(error);
+            return new EmbedBuilder().setTitle('Erro').setDescription('Erro ao incluir música/playlist.');
         }
     },
 
-    busca(message) {
-        if (!message.member.voice.channelId) {
+    async busca(message) {
+        const guildId = message.guild.id;
+        const channelId = message.channel.id;
+        const user = message.author;
+        const voiceChannel = message.member.voice.channel;
+
+        if (!voiceChannel) {
             return new EmbedBuilder().setTitle('Erro').setDescription('Entre no chat de voz primeiro').setColor("#FF0000")
         }
 
@@ -294,108 +307,128 @@ module.exports = {
         }
         const search = message.content.slice(comando.length + 2)
 
-        distube.search(search, {
-            limit: 10,
-            safeSearch: false
-        }).then((result) => {
-            if (result.length > 0) {
-                let lista = '**Escolha uma das opções abaixo**\n'
-                let i = 0
-                result.forEach(song => {
-                    lista += `${++i}) [${song.name} - ${song.uploader.name}](${song.url}) - ${song.formattedDuration}\n`
-                })
+        let player = manager.getPlayer(guildId)
+        if (!player) {
+            player = await manager.createPlayer({
+                guildId: guildId,
+                voiceId: voiceChannel.id,
+                textId: channelId,
+                deaf: true,
+                volume
+            });
+        }
 
-                lista += '\nPara cancelar espere 30 segundos'
-
-                const embed = new EmbedBuilder()
-                    .setTitle('**Exibindo resultados para a busca**')
-                    .setDescription(lista)
-                    .setColor("#0099ff")
-
-                message.channel.send({ embeds: [embed] })
-
-                const collector = message.channel.createMessageCollector({
-                    filter: (msg) => msg.author === message.author && msg.content <= i,
-                    time: 30_000
-                })
-
-                let response = false
-                collector.on('collect', (msg) => {
-                    distube.play(msg.member.voice.channel, result[parseInt(msg.content) - 1].url, {
-                        msg,
-                        textChannel: msg.channel,
-                        member: msg.member
-                    })
-
-                    response = true
-                    collector.stop()
-                })
-
-                collector.on('end', () => {
-                    if (!response) {
-                        message.channel.send('Não foi recebido resposta adequada, busca cancelada')
-                    }
-                })
-            }
+        const result = await player.search(search, {
+            requester: user
         })
+
+        if (result.tracks.length > 0) {
+            let lista = '**Escolha uma das opções abaixo**\n'
+            let i = 0
+            result.tracks.forEach(song => {
+                lista += `${++i}) [${song.title} - ${song.author}](${song.uri}) - ${calculaDuracao(song.length)}\n`
+            })
+
+            lista += '\nPara cancelar espere 30 segundos'
+
+            const embed = new EmbedBuilder()
+                .setTitle('**Exibindo resultados para a busca**')
+                .setDescription(lista)
+                .setColor("#0099ff")
+
+            message.channel.send({ embeds: [embed] })
+
+            const collector = message.channel.createMessageCollector({
+                filter: (msg) => msg.author === message.author && (msg.content <= i && msg.content > 0),
+                time: 30_000
+            })
+
+            let response = false
+            collector.on('collect', (msg) => {
+                const track = result.tracks[parseInt(msg.content) - 1];
+                player.queue.add(track);
+
+                if (!player.playing && !player.paused) {
+                    player.play();
+                }
+
+                response = true
+                collector.stop()
+            })
+
+            collector.on('end', () => {
+                if (!response) {
+                    message.channel.send('Não foi recebido resposta adequada, busca cancelada')
+                }
+            })
+        }
     },
 
     pause(message) {
-        // const distube = new DisTube(client, {})
-        const queue = distube.getQueue(message.guildId)
-        // queue.paused
-        // console.log(queue)
+        const isInteraction = !!message.isCommand;
+        const guildId = isInteraction ? message.guildId : message.guild.id;
+        const player = manager.getPlayer(guildId)
 
-        if (!queue || queue.paused || isTriviaOn) {
+        if (!player || !player.playing || player.paused || isTriviaOn) {
             return
         }
 
-        queue.pause()
+        player.pause(true)
     },
 
     continue(message) {
-        const queue = distube.getQueue(message.guildId)
+        const isInteraction = !!message.isCommand;
+        const guildId = isInteraction ? message.guildId : message.guild.id;
+        const player = manager.getPlayer(guildId)
 
-        if (!queue || !queue.paused || isTriviaOn) {
+        if (!player || !player.paused || isTriviaOn) {
             return
         }
 
-        queue.resume()
+        player.pause(false)
     },
 
-    stop(message) {
-        const queue = distube.getQueue(message.guildId)
+    async stop(message) {
+        const isInteraction = !!message.isCommand;
+        const guildId = isInteraction ? message.guildId : message.guild.id;
+        const player = manager.getPlayer(guildId)
 
-        if (isTriviaOn) {
+        if (!player || isTriviaOn) {
             return
         }
 
-        if (!queue) {
-            distube.stop(message)
-            return
-        }
+        prevHistory.clear()
 
-        queue.stop()
+        await player.destroy()
     },
 
     async next(message) {
-        const queue = distube.getQueue(message.guildId)
+        const isInteraction = !!message.isCommand;
+        const guildId = isInteraction ? message.guildId : message.guild.id;
+        const player = manager.getPlayer(guildId)
 
-        if (!queue || queue.songs.length === 0 || isTriviaOn) {
+        if (!player || !player.playing || isTriviaOn) {
             return
         }
 
-        await queue.skip()
+        await player.skip()
     },
 
     async volta(message) {
-        const queue = distube.getQueue(message.guildId)
+        const isInteraction = !!message.isCommand;
+        const guildId = isInteraction ? message.guildId : message.guild.id;
+        const player = manager.getPlayer(guildId)
 
-        if (!queue || isTriviaOn) {
+        if (!player || !player.queue.previous.length < 1 || isTriviaOn) {
             return
         }
 
-        await queue.previous()
+        const history = prevHistory.get(guildId);
+        if (history && history.length > 0) {
+            const previousTrack = history.pop(); // remove a última
+            prevHistory.set(guildId, history);
+            player.play(previousTrack);
+        }
     },
 
     lista(message) {
@@ -533,60 +566,76 @@ module.exports = {
     },
 
     async mute(message) {
-        let queue = distube.getQueue(message.guildId)
+        const isInteraction = !!message.isCommand;
+        const guildId = isInteraction ? message.guildId : message.guild.id;
+        const player = manager.getPlayer(guildId)
 
-        if (!queue || !queue.songs || isTriviaOn) {
+        if (!player || !player.queue.current || isTriviaOn) {
             return
         }
 
-        queue.setVolume(0)
+        player.setVolume(0)
     },
 
     async unmute(message) {
-        let queue = distube.getQueue(message.guildId)
+        const isInteraction = !!message.isCommand;
+        const guildId = isInteraction ? message.guildId : message.guild.id;
+        const player = manager.getPlayer(guildId)
 
-        if (!queue || !queue.songs || isTriviaOn) {
+        if (!player || !player.queue.current || isTriviaOn) {
             return
         }
 
-        queue.setVolume(volume)
+        player.setVolume(volume)
     },
 
     async mais(message) {
-        let queue = distube.getQueue(message.guildId)
+        const isInteraction = !!message.isCommand;
+        const guildId = isInteraction ? message.guildId : message.guild.id;
+        const player = manager.getPlayer(guildId)
 
-        if (!queue || !queue.songs || isTriviaOn) {
+        if (!player || !player.queue.current || isTriviaOn) {
             return
         }
 
-        queue.setVolume(volume + 10)
+        player.setVolume(volume + 10)
         volume = volume + 10
     },
 
     async menos(message) {
-        let queue = distube.getQueue(message.guildId)
+        const isInteraction = !!message.isCommand;
+        const guildId = isInteraction ? message.guildId : message.guild.id;
+        const player = manager.getPlayer(guildId)
 
-        if (!queue || !queue.songs || isTriviaOn) {
+        if (!player || !player.queue.current || isTriviaOn) {
             return
         }
 
-        queue.setVolume(volume - 10)
+        player.setVolume(volume - 10)
         volume = volume - 10
     },
 
     async loopBtn(message) {
+        const isInteraction = !!message.isCommand;
+
+        if (!isInteraction) return
+        const guildId = message.guildId
+        const player = manager.getPlayer(guildId)
+
         repeat = repeat > 1 ? 0 : repeat + 1
-        distube.setRepeatMode(message, repeat);
+        player.setLoop(validaRepeat(repeat));
     },
 
     async shuffle(message) {
-        let queue = distube.getQueue(message.guildId)
+        const isInteraction = !!message.isCommand;
+        const guildId = isInteraction ? message.guildId : message.guild.id;
+        const player = manager.getPlayer(guildId)
 
-        if (!queue || !queue.songs || isTriviaOn) {
+        if (!player || !player.queue.current || isTriviaOn) {
             return
         }
 
-        await queue.shuffle();
+        await player.queue.shuffle();
     },
 
     async pula(message) {

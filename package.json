@@ -14,12 +14,6 @@
   "dependencies": {
     "@discordjs/opus": "^0.9.0",
     "@discordjs/voice": "^0.17.0",
-    "@distube/soundcloud": "^2.0.1",
-    "@distube/spotify": "^2.0.2",
-    "@distube/youtube": "^1.0.2",
-    "@distube/yt-dlp": "^2.0.1",
-    "@distube/ytdl-core": "^4.15.8",
-    "@distube/ytsr": "^2.0.4",
     "axios": "^1.6.8",
     "cron": "^3.1.7",
     "crypto-js": "^4.2.0",
@@ -27,10 +21,11 @@
     "discord.js": "^14.16.3",
     "distube": "^5.0.4",
     "dotenv": "^16.4.5",
-    "erela.js": "^2.4.0",
+    "kazagumo": "^3.2.2",
     "libsodium-wrappers": "^0.7.13",
     "nodemon": "^3.1.0",
     "play-dl": "^1.9.7",
+    "shoukaku": "^4.1.1",
     "sodium-native": "^4.3.1"
   }
 }

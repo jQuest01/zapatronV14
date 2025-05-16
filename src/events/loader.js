@@ -1,6 +1,5 @@
 const { readdirSync } = require('fs');
 const { REST, Routes, Collection } = require('discord.js');
-const CryptoJS = require("crypto-js");
 
 client.commands = new Collection();
 const commandsArray = [];
@@ -33,12 +32,7 @@ for (const file of commands) {
 };
 
 // Construct and prepare an instance of the REST module
-const key = "12345";
-const decryptedTkn = CryptoJS.AES.decrypt(process.env.DISCORD_BOT_TOKEN, key)
-
-const dToken = decryptedTkn.toString(CryptoJS.enc.Utf8);
-
-const rest = new REST().setToken(dToken);
+const rest = new REST().setToken(process.env.DISCORD_BOT_TOKEN);
 
 // and deploy your commands!
 (async () => {

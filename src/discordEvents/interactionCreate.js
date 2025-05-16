@@ -55,17 +55,20 @@ module.exports = async (client, inter) => {
         // embed.setDescription("Cuidado onde vai mexer ai o saco de vacilo, essas merda ai que me faz funcionar direito")
         await inter.deferUpdate()
         if (inter.member.voice.channel) {
-            const queue = distube.getQueue(inter.guildId)
+            const player = manager.getPlayer(inter.guildId)
 
-            if (queue) {
+            if (player) {
+                const queue = player.queue
+                if(!queue) return;
+
                 const embed = new EmbedBuilder()
                     .setTitle('A música que tá tocando é essa: ')
-                    .setDescription(`\n[${queue.songs[0].name}](${queue.songs[0].url})`)
-                    .setImage(queue.songs[0].thumbnail)
+                    .setDescription(`\n[${queue.current.title}](${queue.current.uri})`)
+                    .setImage(queue.current.thumbnail)
                     .setColor("0099ff")
                     .setFooter({
-                        text: `Adicionado por ${queue.songs[0].member.displayName ? queue.songs[0].member.displayName : queue.songs[0].member.username}`,
-                        iconURL: queue.songs[0].user.avatarURL()
+                        text: `Adicionado por ${queue.current.requester.username}`,
+                        iconURL: queue.current.requester.displayAvatarURL()
                     })
                 let rows = montaBotoesConfig(inter)
                 client.channels.cache.get(inter.channelId).messages.edit(msgId, { components: rows, embeds: [embed] })

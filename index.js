@@ -1,31 +1,8 @@
 require('dotenv').config()
 const { Client, GatewayIntentBits, Collection, Interaction, EmbedBuilder } = require("discord.js")
-
-// const { DisTube } = require('distube');
-// const { SoundCloudPlugin } = require('@distube/soundcloud');
-// const { SpotifyPlugin } = require('@distube/spotify');
-// const { YtDlpPlugin } = require("@distube/yt-dlp")
-// const { YouTubePlugin } = require('@distube/youtube')
-// const ffmpeg = require('ffmpeg-static')
-
-const CryptoJS = require("crypto-js");
 const { CronJob } = require('cron')
-const key = "12345";
-const { Manager } = require('erela.js');
-
-// const cryptoSnd = CryptoJS.AES.decrypt(process.env.SPOTIFY_CLIENT_ID, key)
-// const cryptoTkn = CryptoJS.AES.decrypt(process.env.SPOTIFY_CLIENT_SECRET, key)
-
-// const cryptoSpt = CryptoJS.AES.decrypt(process.env.SPOTIFY_CLIENT_ID, key)
-// const cryptoSct = CryptoJS.AES.decrypt(process.env.SPOTIFY_CLIENT_SECRET, key)
-const decryptedTkn = CryptoJS.AES.decrypt(process.env.DISCORD_BOT_TOKEN, key)
-
-// const sClient = cryptoSnd.toString(CryptoJS.enc.Utf8);
-// const sToken = cryptoTkn.toString(CryptoJS.enc.Utf8);
-const dToken = decryptedTkn.toString(CryptoJS.enc.Utf8);
-
-// const clientId = cryptoSpt.toString(CryptoJS.enc.Utf8);
-// const clientSecret = cryptoSct.toString(CryptoJS.enc.Utf8);
+const { Kazagumo, Plugins } = require('kazagumo')
+const { Connectors } = require('shoukaku')
 
 global.client = new Client({
     intents: [GatewayIntentBits.Guilds,
@@ -35,8 +12,9 @@ global.client = new Client({
     GatewayIntentBits.DirectMessages,
     GatewayIntentBits.MessageContent]
 })
+const lavaPass = process.env.LAVALINK_PASSWORD
 
-global.distube = null
+global.prevHistory = new Map()
 
 global.token = ''
 global.repeat = 0
@@ -44,57 +22,26 @@ global.volume = 50
 global.msgId = ''
 global.jsonServer = 'https://zapas.discloud.app'
 
-// Manager do Erela.js
-global.manager = new Manager({
-    // nodes: [{
-    //     host: "localhost",
-    //     port: 2333,
-    //     password: "zapas123",
-    //     secure: true,
-    // }],
-    nodes: [{
-        host: "lavalink-67hi.onrender.com",
-        port: 443,
-        password: "zapas@123",
-        secure: true, // MUITO IMPORTANTE (porque o Render usa https)
-        endpoint: '/v4/websocket'
-    }],
+const Nodes = [{
+    name: 'lavalink',
+    url: "lavalink-67hi.onrender.com",
+    auth: lavaPass,
+    secure: true
+}]
+
+global.manager = new Kazagumo({
+    defaultSearchEngine: 'youtube',
+    plugins: [new Plugins.PlayerMoved(client)],
     send: (id, payload) => {
         const guild = client.guilds.cache.get(id);
         if (guild) guild.shard.send(payload);
     },
-});
+}, new Connectors.DiscordJS(client), Nodes);
 
 const jobToken = new CronJob('*/30 * * * *', async function () {
     const update = require('./src/controller/comandosController')['updateToken']
     update(null)
 }, null, true, "America/Sao_Paulo");
-
-// const createDistube = async () => {
-//     const getCookies = require('./src/controller/comandosController')['getCookies']
-//     const cookies = await getCookies(null)
-
-//     return new DisTube(client, {
-//         // leaveOnEmpty: true,
-//         // emptyCooldown: 30,
-//         // leaveOnFinish: false,
-//         nsfw: true,
-//         // leaveOnStop: true,
-//         // ffmpeg: { path: ffmpeg },
-//         plugins: [
-//             // new YouTubePlugin({
-//             //     cookies
-//             // }),
-//             new SpotifyPlugin({
-//                 api: {
-//                     clientId, clientSecret
-//                 }
-//             }),
-//             new SoundCloudPlugin({ clientId: sClient, oauthToken: sToken }),
-//             new YtDlpPlugin({ update: true })
-//         ]
-//     })
-// }
 
 client.on('messageCreate', async (message) => {
     if (message.author.bot) {
@@ -123,28 +70,15 @@ client.on('messageCreate', async (message) => {
 })
 
 client.on('ready', async () => {
+    // console.log((await client.users.fetch("499748161825275905")).displayAvatarURL())
     const update = require('./src/controller/comandosController')['updateToken']
     await update(null)
-    // distube = await createDistube()
-    // require('./src/events/distube')
-    manager.init(client.user.id);
     require('./src/events/loader')
+    require('./src/events/kazagumo')
     console.log('Subiu', new Date().toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" }))
-})
-
-manager.on("nodeConnect", (node) => {
-    console.log(`Conectado ao nó: ${node.options.id}`);
-});
-
-manager.on("nodeError", (node, error) => {
-    console.error(`Erro no nó ${node.options.id}:`, error);
-});
-
-manager.on("nodeCreate", (node) => {
-    console.log("TESTE "+node)
 })
 
 global.isTriviaOn = false
 global.playerTrivia = []
 
-client.login(dToken)
+client.login(process.env.DISCORD_BOT_TOKEN)

@@ -17,16 +17,16 @@ module.exports = {
 function telaInicial(row, interaction) {
     if (!interaction) return []
     let rows = []
-    const queue = interaction.guildId ? distube.getQueue(interaction.guildId) : interaction
+    const player = interaction.guildId ? manager.getPlayer(interaction.guildId) : interaction
 
     row.addComponents(
         new ButtonBuilder()
             .setCustomId('volta')
             .setStyle(ButtonStyle.Secondary)
             .setEmoji('<:skipback:1243671127356604541>')
-            .setDisabled(queue.previousSongs.length <= 0),
+            .setDisabled(player.queue.previous.length <= 0),
 
-        !queue.paused ?
+        !player.paused ?
             new ButtonBuilder()
                 .setCustomId('pause')
                 .setStyle(ButtonStyle.Primary)
@@ -40,7 +40,7 @@ function telaInicial(row, interaction) {
             .setCustomId('next')
             .setStyle(ButtonStyle.Secondary)
             .setEmoji('<:skipforward:1243671128732336189>')
-            .setDisabled(queue.songs.length <= 1),
+            .setDisabled(player.queue.length <= 1),
         new ButtonBuilder()
             .setCustomId('letra')
             .setStyle(ButtonStyle.Secondary)
@@ -56,7 +56,7 @@ function telaInicial(row, interaction) {
             .setStyle(ButtonStyle.Primary)
             .setEmoji('<:volume1:1243671133040017539>')
             .setDisabled(volume === 0),
-        queue.volume ?
+        player.volume ?
             new ButtonBuilder()
                 .setCustomId('mute')
                 .setStyle(ButtonStyle.Danger)
@@ -76,7 +76,7 @@ function telaInicial(row, interaction) {
         new ButtonBuilder()
             .setCustomId('volume')
             .setDisabled(true)
-            .setLabel('Volume ' + queue.volume + '%')
+            .setLabel('Volume ' + player.volume + '%')
             .setStyle(ButtonStyle.Secondary)
     )
 
@@ -98,7 +98,7 @@ function telaInicial(row, interaction) {
         new ButtonBuilder()
             .setCustomId('repeat')
             .setDisabled(true)
-            .setLabel(validaRepeat(queue.repeatMode))
+            .setLabel(validaRepeat(player.loop))
             .setStyle(ButtonStyle.Secondary)
     )
 
@@ -109,13 +109,13 @@ function telaInicial(row, interaction) {
 
 const validaRepeat = (repeat) => {
     switch (repeat) {
-        case (0): {
+        case ("none"): {
             return 'Repetição desativada'
         }
-        case (1): {
+        case ("queue"): {
             return 'Repetindo lista'
         }
-        case (2): {
+        case ("track"): {
             return 'Repetindo música'
         }
     }
