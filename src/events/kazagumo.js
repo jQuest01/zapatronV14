@@ -317,7 +317,7 @@ manager.on('playerEmpty', async (player) => {
                     let quitar = false
                     const queue2 = manager.getPlayer(player.guildId).queue
 
-                    if (!queue2.playing()) quitar = true
+                    if (!queue2.playing) quitar = true
 
                     if (quitar) {
                         await player.destroy()
