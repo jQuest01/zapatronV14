@@ -59,7 +59,7 @@ module.exports = async (client, inter) => {
 
             if (player) {
                 const queue = player.queue
-                if(!queue) return;
+                if (!queue) return;
 
                 const embed = new EmbedBuilder()
                     .setTitle('A música que tá tocando é essa: ')
@@ -70,10 +70,12 @@ module.exports = async (client, inter) => {
                         text: `Adicionado por ${queue.current.requester.username}`,
                         iconURL: queue.current.requester.displayAvatarURL()
                     })
-                let rows = montaBotoesConfig(inter)
+                let rows = montaBotoesConfig(player)
                 client.channels.cache.get(inter.channelId).messages.edit(msgId, { components: rows, embeds: [embed] })
             } else {
-                client.channels.cache.get(inter.channelId).messages.delete(msgId)
+                if (msgId !== '') {
+                    client.channels.cache.get(inter.channelId).messages.delete(msgId)
+                }
                 msgId = ''
             }
 

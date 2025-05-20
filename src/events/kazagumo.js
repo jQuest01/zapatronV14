@@ -11,13 +11,14 @@ manager.on('playerException', (player, data) => {
     console.log('playerException', data.exception)
 })
 
-manager.on('playerEnd', (player) => {
-    const guildId = player.guildId;
-    const history = prevHistory.get(guildId) || [];
+// manager.on('playerEnd', (player) => {
+//     console.log('playerEnd')
+//     const guildId = player.guildId;
+//     const history = prevHistory.get(guildId) || [];
 
-    history.push(player.queue.currentTrack);
-    prevHistory.set(guildId, history);
-})
+//     history.push(player.queue.currentTrack);
+//     prevHistory.set(guildId, history);
+// })
 
 manager.on('playerStart', async (player, track) => {
     console.log('trigger playerStart')
@@ -45,14 +46,23 @@ manager.on('playerStart', async (player, track) => {
                     })
                 }
             }
+
+            if (player.queue.previous.length > 0) {
+                const trackAtual = player.queue.previous[0]
+                if (trackAtual.uri !== track.uri && !backPressionado) {
+                    prevHistory.set(prevHistory.size + 1, trackAtual);
+                }
+                backPressionado = false
+            }
+
         } catch (error) {
             console.log(new Date().toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" }), error)
         }
 
     } else {
-        if (track.url !== 'https://www.youtube.com/watch?v=HtDzVSgjjEc') {
-            // await queue.node.seek(30000)
-            await triviaControl(player)
+        if (track.uri !== 'https://www.youtube.com/watch?v=HtDzVSgjjEc') {
+            await player.seek(30000)
+            await triviaControl(player, player.guildId)
         }
     }
 });
@@ -81,7 +91,7 @@ function getMenor(singersAnswer) {
     return menor
 }
 
-async function triviaControl(player) {
+async function triviaControl(player, guildId) {
     const queue = player.queue
     let song = queue.current.uri
     let songNameFound = false;
@@ -102,7 +112,7 @@ async function triviaControl(player) {
     singersAnswer = songFiltrado.singers
     let acertou = ''
     const filter = response => {
-        const queue2 = manager.getPlayer(player.guildId).queue
+        const queue2 = manager.getPlayer(guildId).queue
 
         if (!getTriviaPlayer(response.author.id)) return false;
         if (!queue2 || queue2.current.uri !== song) return false
@@ -183,12 +193,11 @@ async function triviaControl(player) {
         }
     })
 
-    collector.on('end', async (msg) => {
-
+    collector.on('end', async () => {
         try {
             // if (!songNameFound && !songSingerFound) {
             acertou = ''
-            const queue2 = manager.getPlayer(msg.guildId).queue
+            const queue2 = manager.getPlayer(guildId).queue
 
             // if (!queue2 || queue2.songs[0].url !== song) {
             //     await queue.node.play(song, {
@@ -219,13 +228,13 @@ async function triviaControl(player) {
                     .setColor('#60d1f6')
                     .setTitle(`**A música era: ${msc}**`)
                     .setDescription('**__PLACAR DE XP__**\n\n' + getLeaderBoard(playerTrivia))
-                    .setThumbnail(queue.songs[0].thumbnail)
-                    .setFooter({ text: `Quiz de música - Faixa ${queue.songs && queue.songs.length >= 0 ? 16 - queue.songs.length : '15'}/15` })
+                    .setThumbnail(queue.current.thumbnail || 'https://cdn-icons-png.flaticon.com/512/2748/2748558.png')
+                    .setFooter({ text: `Quiz de música - Faixa ${queue.previous.length}/15` })
 
-                await msg.send({ embeds: [embed] });
+                await client.channels.cache.get(player.textId).send({ embeds: [embed] });
 
-                if (queue.songs.length === 1) {
-                    queue.stop();
+                if (queue.previous.length === 15) {
+                    player.destroy();
                     isTriviaOn = false
 
                     const embed = new EmbedBuilder()
@@ -233,12 +242,12 @@ async function triviaControl(player) {
                         .setTitle('**Classificação do Quiz de Música**')
                         .setDescription(getLeaderBoard(playerTrivia))
 
-                    await msg.send({ content: 'O Quiz de música acabou', embeds: [embed] });
+                    await client.channels.cache.get(player.textId).send({ content: 'O Quiz de música acabou', embeds: [embed] });
 
                     return;
                 }
 
-                await queue.skip();
+                await player.skip();
 
             }
         } catch (error) {
@@ -248,15 +257,25 @@ async function triviaControl(player) {
 }
 
 manager.on('queueUpdate', (player, queue) => {
-    console.log('trigger addSong')
+    console.log('trigger queueUpdate')
     if (!isTriviaOn) {
-        if (queue.previous.length > 0) {
-            client.channels.cache.get(player.textId).send({
-                embeds: [new EmbedBuilder()
+        if (queue.previous.length > 0 || queue.length > 0) {
+            var embed = null
+            try {
+                embed = new EmbedBuilder()
                     .setTitle("**Adicionando a seguinte música na lista:**")
-                    .setDescription(`\n[${queue.current.title}](${queue.current.url})`)
-                    .setImage(queue.current.thumbnail)
-                    .setColor("0099ff")]
+                    .setDescription(`\n[${queue[queue.length - 1].title}](${queue[queue.length - 1].uri})`)
+                    .setImage(queue[queue.length - 1].thumbnail)
+                    .setColor("0099ff")
+            } catch (error) {
+                embed = new EmbedBuilder()
+                    .setTitle("**Adicionando a seguinte música na lista:**")
+                    .setDescription(`\n[${queue.current.title}](${queue.uri})`)
+                    .setImage(queue.thumbnail)
+                    .setColor("0099ff")
+            }
+            client.channels.cache.get(player.textId).send({
+                embeds: [embed]
             }).then(msg => {
                 setTimeout(() => {
                     try {
@@ -270,14 +289,14 @@ manager.on('queueUpdate', (player, queue) => {
             if (msgId !== '') {
                 const embed = new EmbedBuilder()
                     .setTitle('A música que tá tocando é essa: ')
-                    .setDescription(`\n[${queue.current.name}](${queue.current.url})`)
+                    .setDescription(`\n[${queue.current.title}](${queue.current.uri})`)
                     .setImage(queue.current.thumbnail)
                     .setColor("0099ff")
                     .setFooter({
                         text: `Adicionado por ${queue.current.requester.username}`,
                         iconURL: queue.current.requester.displayAvatarURL()
                     })
-                client.channels.cache.get(player.textId).messages.edit(msgId, { components: montaBotoesConfig(queue), embeds: [embed] })
+                client.channels.cache.get(player.textId).messages.edit(msgId, { components: montaBotoesConfig(player), embeds: [embed] })
             }
 
         }
@@ -297,7 +316,7 @@ manager.on('playerDestroy', (player) => {
             .setDescription('Precisar chama ✅')
             .setColor("0099ff")]
     });
-    prevHistory
+    prevHistory.clear()
 });
 
 manager.on('playerEmpty', async (player) => {
@@ -315,9 +334,11 @@ manager.on('playerEmpty', async (player) => {
             setTimeout(async () => {
                 try {
                     let quitar = false
-                    const queue2 = manager.getPlayer(player.guildId).queue
+                    const queue = manager.getPlayer(player.guildId).queue
 
-                    if (!queue2.playing) quitar = true
+                    if (!queue || !queue.current) {
+                        quitar = true
+                    }
 
                     if (quitar) {
                         await player.destroy()

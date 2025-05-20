@@ -24,7 +24,7 @@ function telaInicial(row, interaction) {
             .setCustomId('volta')
             .setStyle(ButtonStyle.Secondary)
             .setEmoji('<:skipback:1243671127356604541>')
-            .setDisabled(player.queue.previous.length <= 0),
+            .setDisabled(prevHistory.size < 1),
 
         !player.paused ?
             new ButtonBuilder()
@@ -40,7 +40,7 @@ function telaInicial(row, interaction) {
             .setCustomId('next')
             .setStyle(ButtonStyle.Secondary)
             .setEmoji('<:skipforward:1243671128732336189>')
-            .setDisabled(player.queue.length <= 1),
+            .setDisabled(player.queue.length < 1),
         new ButtonBuilder()
             .setCustomId('letra')
             .setStyle(ButtonStyle.Secondary)

@@ -10,9 +10,9 @@ module.exports = {
                 .setDescription('Selecione dentre as opções disponiveis')
                 .setRequired(true)
                 .addChoices(
-                    { name: 'Playlist', value: 'enable_loop_queue' },
-                    { name: 'Desativar', value: 'disable_loop' },
-                    { name: 'Música', value: 'enable_loop_song' }
+                    { name: 'Playlist', value: 'queue' },
+                    { name: 'Desativar', value: 'none' },
+                    { name: 'Música', value: 'track' }
                 )),
     voiceChannel: true,
 

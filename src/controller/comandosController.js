@@ -1,4 +1,4 @@
-const { EmbedBuilder, ButtonBuilder, ButtonStyle } = require('discord.js')
+const { EmbedBuilder } = require('discord.js')
 const { getRandom } = require('../trivia/triviaUtils')
 const CryptoJS = require("crypto-js");
 const fs = require('fs')
@@ -92,6 +92,11 @@ module.exports = {
 
     async quiz(message) {
         try {
+            const guildId = message.guild.id;
+            const channelId = message.channel.id;
+            const user = message.author;
+            const voiceChannel = message.member.voice.channel;
+
             if (!message.member.voice.channelId) {
                 await message.channel.send({
                     embeds: [new EmbedBuilder().setTitle('Erro').setDescription('Entre no chat de voz primeiro').setColor("#FF0000")]
@@ -144,17 +149,25 @@ module.exports = {
                 .setImage('https://www.useyourlocal.com/imgs/pub_events/730w/151119-093735_quiz-time.jpg')
                 .setColor('#60d1f6')
 
-            const playlist = await distube.createCustomPlaylist(songsJson, {
-                member: message.member,
-                properties: { name: "Quiz de música", source: "custom" },
-                parallel: true
-            });
+            let player = manager.getPlayer(guildId)
+            if (!player) {
+                player = await manager.createPlayer({
+                    guildId: guildId,
+                    voiceId: voiceChannel.id,
+                    textId: channelId,
+                    deaf: true,
+                    volume: 100
+                });
+            }
 
-            distube.play(message.member.voice.channel, playlist, {
-                message,
-                textChannel: message.channel,
-                member: message.member
-            });
+            for (const song of songsJson) {
+                const result = await player.search(song, { requester: user });
+                player.queue.add(result.tracks[0])
+            }
+
+            if (!player.playing && !player.paused) {
+                player.play();
+            }
 
             await message.channel.send({ embeds: [embed] })
         } catch (error) {
@@ -419,22 +432,25 @@ module.exports = {
         const guildId = isInteraction ? message.guildId : message.guild.id;
         const player = manager.getPlayer(guildId)
 
-        if (!player || !player.queue.previous.length < 1 || isTriviaOn) {
+        if (!player || player.queue.previous.length < 1 || isTriviaOn) {
             return
         }
 
-        const history = prevHistory.get(guildId);
-        if (history && history.length > 0) {
-            const previousTrack = history.pop(); // remove a última
-            prevHistory.set(guildId, history);
+        if (prevHistory.size > 0) {
+            const previousTrack = prevHistory.get(prevHistory.size)
+            prevHistory.delete(prevHistory.size)
+
             player.play(previousTrack);
+            backPressionado = true
         }
     },
 
     lista(message) {
-        const queue = distube.getQueue(message.guildId)
+        const isInteraction = !!message.isCommand;
+        const guildId = isInteraction ? message.guildId : message.guild.id;
+        const player = manager.getPlayer(guildId)
 
-        if (!queue || !queue.songs) {
+        if (!player || !player.queue) {
             return new EmbedBuilder().setTitle('Erro').setDescription('A lista está vazia').setColor("#FF0000")
         }
 
@@ -442,44 +458,43 @@ module.exports = {
             return new EmbedBuilder().setTitle('Erro').setDescription('Tem um quiz rodando, não vou mostrar a lista').setColor("#FF0000")
         }
 
-        let antes = queue.previousSongs
-        let atual = queue.songs[0]
-        let prox = queue.songs.slice(1)
+        const prox = player.queue
+        const atual = prox.current
 
         let lista = ''
         let pos = 0
         var verificaAnterior = false
 
-        if (queue.repeatMode === 2) {
+        if (player.loop === 'queue') {
             lista += '** A lista está em loop **\n'
         }
 
-        if (queue.repeatMode === 1) {
+        if (player.loop === 'track') {
             lista += '** Essa música está em loop **\n'
             lista += '\n`    ⬐ tocando agora`\n'
-            lista += `${pos}) [${atual.name}](${atual.url}) - ${atual.formattedDuration} \n`
+            lista += `${pos}) [${atual.title}](${atual.uri}) - ${calculaDuracao(atual.length)} \n`
             lista += '`    ⬑ tocando agora`\n'
         } else {
-            if (antes.length) {
+            if (prevHistory.size > 0) {
                 verificaAnterior = true
                 lista += '**Músicas que já tocaram**\n'
-                pos = pos - antes.length
+                pos = pos - prevHistory.size
 
-                for (i = 0; i < antes.length; i++) {
-                    lista += `${pos}) [${antes[i].name}](${antes[i].url}) - ${antes[i].formattedDuration} \n`
+                prevHistory.forEach((antes, unused) => {
+                    lista += `${pos}) [${antes.title}](${antes.uri}) - ${calculaDuracao(antes.length)} \n`
                     pos++
-                }
+                })
             }
 
             lista += '\n`    ⬐ tocando agora`\n'
-            lista += `${pos}) [${atual.name}](${atual.url}) - ${atual.formattedDuration} \n`
+            lista += `${pos}) [${atual.title}](${atual.uri}) - ${calculaDuracao(atual.length)} \n`
             lista += '`    ⬑ tocando agora`\n'
 
             pos++
 
             if (prox.length) lista += '\n**Músicas que ainda vão tocar**\n'
             for (i = 0; i < prox.length; i++) {
-                lista += `${pos}) [${prox[i].name}](${prox[i].url}) - ${prox[i].formattedDuration} \n`
+                lista += `${pos}) [${prox[i].title}](${prox[i].uri}) - ${calculaDuracao(prox[i].length)} \n`
                 pos++
             }
         }
@@ -502,9 +517,12 @@ module.exports = {
     },
 
     async loop(message) {
-        let queue = distube.getQueue(message.guildId)
+        const isInteraction = !!message.isCommand;
+        const guildId = isInteraction ? message.guildId : message.guild.id;
+        const player = manager.getPlayer(guildId)
+        let queue = queue = player.queue
 
-        if (!queue || !queue.songs || isTriviaOn) {
+        if (!player || !queue || isTriviaOn) {
             const embed = new EmbedBuilder()
                 .setDescription('Não foi possível executar esse comando, ou não há nada na lista, ou está tendo quiz de música')
                 .setTitle('Erro')
@@ -521,36 +539,36 @@ module.exports = {
             var opt = message.options.getString('opcao')
         } catch (error) {
             const comando = message.content.substring(1).split(/ +/)[0]
-            const index = message.content.indexOf(" ");
 
             var select = message.content.slice(comando.length + 2)
 
             if (['playlist', 'lista', 'musicas', 'músicas'].includes(select.toLowerCase())) {
-                var opt = 'enable_loop_queue'
+                opt = 'queue'
             } else if (['música', 'musica', 'song'].includes(select.toLowerCase())) {
-                var opt = 'enable_loop_song'
+                opt = 'track'
             } else {
-                var opt = 'disable_loop'
+                opt = 'none'
             }
         }
 
+        let repeat = ''
+
         switch (opt) {
-            case ('enable_loop_queue'): {
-                var repeat = 'entrar em loop'
-                distube.setRepeatMode(message, 2);
+            case ('queue'): {
+                repeat = 'entrar em loop'
                 break
             }
-            case ('enable_loop_song'): {
-                var repeat = 'repetir essa música'
-                distube.setRepeatMode(message, 1);
+            case ('track'): {
+                repeat = 'repetir essa música'
                 break
             }
-            case ('disable_loop'): {
-                var repeat = 'não repetir'
-                distube.setRepeatMode(message, 0);
+            case ('none'): {
+                repeat = 'não repetir'
                 break
             }
         }
+
+        player.setLoop(opt)
 
         const embed = new EmbedBuilder()
             .setDescription(`Playlist alterada para ${repeat}`)
@@ -638,42 +656,13 @@ module.exports = {
         await player.queue.shuffle();
     },
 
-    async pula(message) {
-        let queue = distube.getQueue(message.guildId)
-
-        if (!queue || !queue.songs || isTriviaOn) {
-            return
-        }
-
-        try {
-            var pos = message.options.getInteger('posicao');
-        } catch (error) {
-            const comando = message.content.substring(1).split(/ +/)[0]
-            const index = message.content.indexOf(" ");
-            if (index !== -1) {
-                var pos = message.content.slice(comando.length + 2)
-                try {
-                    pos = parseInt(pos)
-                } catch (error) {
-                    console.log(error)
-                }
-            }
-        }
-
-        if (pos === 0) return
-        if (pos < 0 && queue.previousSongs.length < 1) return
-        if (pos > 0 && queue.songs.length < 1) return
-
-        queue.jump(pos)
-        try {
-            await message.channel.send({ content: `Pulado com sucesso.` });
-        } catch (error) {
-            await inter.editReply({ content: `Pulado com sucesso.` });
-        }
-
-    },
     async letra(message) {
-        const queue = distube.getQueue(message.guildId)
+        const isInteraction = !!message.isCommand;
+        const guildId = isInteraction ? message.guildId : message.guild.id;
+        const player = manager.getPlayer(guildId)
+
+        const queue = player.queue
+
         try {
             var index = message.content.indexOf(" ");
         } catch (error) {
@@ -682,10 +671,9 @@ module.exports = {
         var title = ''
         if (index !== -1) {
             title = message.content.slice(index + 1)
-        } else if (queue) {
-            title = queue.songs[0].name
+        } else if (player && queue) {
+            title = queue.current.title
         } else {
-            // return 
             return message.channel.send({
                 embeds: [new EmbedBuilder()
                     .setTitle('Erro')
@@ -704,27 +692,17 @@ module.exports = {
         }
 
         try {
-            const data = await getLetra(title);
-            var embed = cortaNome(4096, data.lyrics)
-            embed = embed[0].split('\n')
+            const embeds = []
+            console.log(await player.fetchLyrics)
+            const lyrics = await player.fetchLyrics.then(res => res.data)
+            embeds.push(new EmbedBuilder()
+                .setTitle(`${title} - ${queue.current.author}`)
+                .setDescription(lyrics)
+                .setImage(queue.current.thumbnail)
+                .setColor(config.cores.azul))
 
-            var letra = ''
-            pos = 0
-            for (nome of embed) {
-                letra += nome + '\n'
-                pos++
-                if (pos === 4) {
-                    pos = 0
-                    letra += '\n'
-                }
-            }
             return message.channel.send({
-                embeds: [new EmbedBuilder()
-                    .setTitle(`${data.title} - ${data.author}`)
-                    .setDescription(letra)
-                    .setImage(data.thumbnail.genius)
-                    .setColor(config.cores.azul)
-                ]
+                embeds
             });
         } catch (err) {
             console.log(new Date(), err)

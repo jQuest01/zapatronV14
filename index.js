@@ -15,7 +15,7 @@ global.client = new Client({
 const lavaPass = process.env.LAVALINK_PASSWORD
 
 global.prevHistory = new Map()
-
+global.backPressionado = false
 global.token = ''
 global.repeat = 0
 global.volume = 50
@@ -75,6 +75,7 @@ client.on('ready', async () => {
     await update(null)
     require('./src/events/loader')
     require('./src/events/kazagumo')
+
     console.log('Subiu', new Date().toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" }))
 })
 
