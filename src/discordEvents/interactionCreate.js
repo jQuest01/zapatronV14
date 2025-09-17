@@ -38,7 +38,7 @@ module.exports = async (client, inter) => {
                 } catch (error) {
                     console.log(error)
                 } finally {
-                    await axios.delete(`${jsonServer}/api/idempotencia`, { headers: header })
+                    await axios.delete(`${jsonServer}/api/idempotencia`, {servico: inter.customId}, { headers: header })
                 }
             }
         }
