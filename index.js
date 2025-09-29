@@ -12,6 +12,7 @@ global.client = new Client({
     GatewayIntentBits.DirectMessages,
     GatewayIntentBits.MessageContent]
 })
+
 const lavaPass = process.env.LAVALINK_PASSWORD
 
 global.prevHistory = new Map()
